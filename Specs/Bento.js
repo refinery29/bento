@@ -40,6 +40,29 @@ describe("Bento", function() {
       expect(bento.columns[2]).toBe(copy[2])
       expect(bento.columns).toEqual([Bento.Column(4), Bento.Column(5), Bento.Column(6)])
     })
+    
+    describe('when given node list', function() {
+      it ('should read widths from elements', function() {
+        var parent = document.createElement('div');
+        var a = document.createElement('div');
+        var b = document.createElement('div');
+        var c = document.createElement('div');
+        a.style.width = '100px'
+        b.style.width = '200px'
+        c.style.width = '300px'
+        parent.appendChild(a)
+        parent.appendChild(b)
+        parent.appendChild(c)
+        var bento = new Bento;
+        bento.setColumns(parent.childNodes);
+        expect(bento.columns[0].width).toBe(100)
+        expect(bento.columns[1].width).toBe(200)
+        expect(bento.columns[2].width).toBe(300)
+        parent.removeChild(c)
+        bento.setColumns(parent.childNodes);
+        expect(bento.columns[2]).toBeUndefined()
+      })
+    })
   })
   describe('.Column', function() {
     describe('when given a number', function() {

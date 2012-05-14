@@ -33,12 +33,9 @@ var Bento = function() {
   }
 };
 Bento.prototype.setColumns = function(settings) {
-  var self = this;
-  var columns = settings.map(function(value, i) {
-    var column = Bento.Column(self.columns && self.columns[i], value);
-    delete column.height;
-    return column;
-  });
+  if (arguments.length > 1 || (typeof settings != 'object' && typeof settings.length != 'number')) settings = arguments;
+  for (var i = 0, j = settings.length, columns = []; i < j; i++)
+    columns.push(Bento.Column(this.columns && this.columns[i], settings[i]))
   if (this.columns) 
     for (var i = columns.length, j = this.columns.length; i < j; i++)
       delete this.columns[i].width
@@ -100,8 +97,8 @@ Bento.Column = function(first) {
     switch (typeof (arg = arguments[i])) {
       case 'object':
         if (arg == null) continue;
-        if (arg instanceof Bento.Column) 
-          continue;
+        if (arg instanceof Bento.Column)
+          delete arg.height;
         else if (arg instanceof Bento)
           this.setBento(arg);
         else if (arg.nodeType)
