@@ -1,0 +1,10 @@
+name: Bento
+filename: bento.js
+description: Tightly pack your content
+license: Public domain, http://unlicense.org
+copyright: Yaroslaff Fedin
+author: inviz
+category: Interface
+current: 0.1
+sources:
+  - Source/Bento.js
