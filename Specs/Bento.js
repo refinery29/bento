@@ -47,6 +47,16 @@ describe("Bento", function() {
         expect(Bento.Column(123).width).toBe(123)
       })
     })
+    describe('when given an element', function() {
+      it ('should treat it as width', function() {
+        var el = document.createElement('div');
+        el.style.width = '130px';
+        var col = Bento.Column(el);
+        expect(col.width).toBe(130)
+        el.style.width = '150px';
+        expect(Bento.Column(col, el).width).toBe(150)
+      })
+    })
     describe('when given a bento object', function() {
       it ('should assign bento to a column', function() {
         var bento = new Bento;

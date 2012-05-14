@@ -69,9 +69,6 @@ Bento.prototype.setWidth = function(width) {
 Bento.prototype.setElement = function(element) {
   this.element = element;
 };
-Bento.prototype.setElement = function(element) {
-  this.element = element;
-};
 Bento.prototype.getColumn = function(item, prepend) {
   if (this.columns) for (var i = 0, j, min, column; column = this.columns[i++];)
     if (column.width != null)
@@ -107,6 +104,8 @@ Bento.Column = function(first) {
           continue;
         else if (arg instanceof Bento)
           this.setBento(arg);
+        else if (arg.nodeType)
+          this.setElement(arg);
         break;
       case 'number':
         if (width == null) var width = this.setWidth(arg);
@@ -117,7 +116,6 @@ Bento.Column = function(first) {
 Bento.Column.prototype.setSize    = Bento.prototype.setSize;
 Bento.Column.prototype.setHeight  = Bento.prototype.setHeight;
 Bento.Column.prototype.setWidth   = Bento.prototype.setWidth;
-Bento.Column.prototype.setElement = Bento.prototype.setElement;
 Bento.Column.prototype.concat     = Bento.prototype.concat;
 Bento.Column.prototype.height     = 0;
 Bento.Column.prototype.push = function() {
@@ -127,6 +125,10 @@ Bento.Column.prototype.push = function() {
 Bento.Column.prototype.setBento = function(bento) {
   this.bento = bento;
 };
+Bento.Column.prototype.setElement = function(element) {
+  this.element = element;
+  this.setWidth(this.element.offsetWidth || parseInt(this.element.style.width));
+}
 /*
   Bento item is a wrapper over a content object. It knows its
   size and thus it helps bento to choose a right column.
