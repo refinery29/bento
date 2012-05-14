@@ -33,7 +33,8 @@ var Bento = function() {
   }
 };
 Bento.prototype.setColumns = function(settings) {
-  if (arguments.length > 1 || (typeof settings != 'object' && typeof settings.length != 'number')) settings = arguments;
+  if (arguments.length > 1 || (typeof settings != 'object' && typeof settings.item != 'function')) 
+    settings = arguments;
   for (var i = 0, j = settings.length, columns = []; i < j; i++)
     columns.push(Bento.Column(this.columns && this.columns[i], settings[i]))
   if (this.columns) 
