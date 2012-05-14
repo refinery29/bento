@@ -58,8 +58,10 @@ describe("Bento", function() {
         expect(bento.columns[0].width).toBe(100)
         expect(bento.columns[1].width).toBe(200)
         expect(bento.columns[2].width).toBe(300)
-        parent.removeChild(c)
+        parent.removeChild(b)
         bento.setColumns(parent.childNodes);
+        expect(bento.columns[0].width).toBe(100)
+        expect(bento.columns[1].width).toBe(300)
         expect(bento.columns[2]).toBeUndefined()
       })
     })
