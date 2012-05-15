@@ -36,12 +36,19 @@ describe("Bento", function() {
         expect(bento.items[2].column).toBe(bento.columns[2]);
         expect(bento.items[3].column).toBe(bento.columns[1]);
         expect(bento.items[4].column).toBe(bento.columns[0]);
+        expect(bento.columns[0].height).toEqual(250)
+        expect(bento.columns[1].height).toEqual(225)
+        expect(bento.columns[2].height).toEqual(200)
         bento.setColumns([ 100, 100, 100, 100 ])
+        expect(bento.columns[0].height).toEqual(150)
+        expect(bento.columns[1].height).toEqual(125)
+        expect(bento.columns[2].height).toEqual(200)
+        expect(bento.columns[2].height).toEqual(200)
         expect(bento.items[0].column).toBe(bento.columns[0]);
         expect(bento.items[1].column).toBe(bento.columns[1]);
         expect(bento.items[2].column).toBe(bento.columns[2]);
         expect(bento.items[3].column).toBe(bento.columns[3]);
-        expect(bento.items[4].column).toBe(bento.columns[1]);
+        expect(bento.items[4].column).toBe(bento.columns[3]);
         bento.setColumns([ 100, 100, 100])
         expect(bento.items[0].column).toBe(bento.columns[0]);
         expect(bento.items[1].column).toBe(bento.columns[1]);
@@ -54,17 +61,27 @@ describe("Bento", function() {
         expect(bento.items[6].column).toBe(bento.columns[1]);
       })
       
-      describe('and some items dont fit the width', function() {
+      describe('and some items only fit wide columns', function() {
         it ('should position them in right columns', function() {
           var items = [{width: 100, height: 150}, {width: 100, height: 125}, {width: 150, height: 200}, 
                        {width: 140, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}];
           var bento = new Bento(0.25, [ 100, 150, 100 ], items);
+          expect(bento.maxWidth).toBe(150);
+          expect(bento.minWidth).toBe(100);
           expect(bento.items[0].column).toBe(bento.columns[0]);
           expect(bento.items[1].column).toBe(bento.columns[2]);
           expect(bento.items[2].column).toBe(bento.columns[1]);
-          expect(bento.items[3].column).toBe(bento.columns[1]);
-          expect(bento.items[4].column).toBe(bento.columns[2]);
-          expect(bento.items[5].column).toBe(bento.columns[0]);
+        })
+      })
+      
+      describe('and items are overly large sized', function() {
+        it ('should downscale items: portait items take smallest columns, landspace take widest', function() {
+          var items = [{width: 768, height: 1024}, {width: 1024, height: 768}, {width: 512, height: 384}/*,
+                       {width: 768, height: 1024}, {width: 1024, height: 768}, {width: 512, height: 384}*/];
+          var bento = new Bento([300, 200, 100], items);
+          expect(bento.items[0].column).toBe(bento.columns[2]);
+          expect(bento.items[1].column).toBe(bento.columns[0]);
+          expect(bento.items[2].column).toBe(bento.columns[1]);
         })
       })
     });
