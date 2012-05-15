@@ -1,4 +1,27 @@
 describe("Bento", function() {
+  describe('when given an element', function() {
+    it ('should read & assign width and height of an element', function() {
+      var el = document.createElement('div');
+      el.style.height = '768px';
+      el.style.width = '1024px';
+      var bento = new Bento(el);
+      expect(bento.height).toBe(768);
+      expect(bento.width).toBe(1024);
+    })
+  })
+  describe('when given a function', function() {
+    it ('should call that function to fetch data', function() {
+      var args, bento = new Bento(function(page, memo) {
+        args = [page, memo]
+        return page + 'Jizzlebeck'
+      });
+      expect(args).toEqual([1, undefined])
+      bento.setPage(2);        
+      expect(args).toEqual([2, '1Jizzlebeck'])
+      bento.setPage(3);        
+      expect(args).toEqual([3, '2Jizzlebeck'])
+    })
+  })
   describe('when given an array of columns', function() {
     it ('should set columns', function() {
       var bento = new Bento([1, 2, 3]);
@@ -25,6 +48,24 @@ describe("Bento", function() {
         expect(bento.items[2].column).toBe(bento.columns[2]);
         expect(bento.items[3].column).toBe(bento.columns[1]);
         expect(bento.items[4].column).toBe(bento.columns[0]);
+        bento.push({width: 100, height: 100})
+        expect(bento.items[5].column).toBe(bento.columns[2]);
+        bento.push({width: 100, height: 100})
+        expect(bento.items[6].column).toBe(bento.columns[1]);
+      })
+      
+      describe('and some items dont fit the width', function() {
+        it ('should position them in right columns', function() {
+          var items = [{width: 100, height: 150}, {width: 100, height: 125}, {width: 150, height: 200}, 
+                       {width: 140, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}];
+          var bento = new Bento(0.25, [ 100, 150, 100 ], items);
+          expect(bento.items[0].column).toBe(bento.columns[0]);
+          expect(bento.items[1].column).toBe(bento.columns[2]);
+          expect(bento.items[2].column).toBe(bento.columns[1]);
+          expect(bento.items[3].column).toBe(bento.columns[1]);
+          expect(bento.items[4].column).toBe(bento.columns[2]);
+          expect(bento.items[5].column).toBe(bento.columns[0]);
+        })
       })
     });
   });  
