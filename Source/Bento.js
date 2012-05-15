@@ -24,16 +24,24 @@ var Bento = function() {
         } else {
           if (arg === window) {
             var self = this;
-            window.onresize = function() {
+            window.onresize = function(e) {
               self.onResize(e)
             }
-          } else if (arg.nodeType) this.setElement(arg);
+            window.onscroll = function(e) {
+              self.onScroll(e)
+            }
+          } else if (arg.nodeType) 
+            this.setElement(arg);
+          else
+            this.setSize(arg.width, arg.height); 
         }
         break;
       case 'function':
         this.request = arg;
       case 'number':
         if (arg < 1 && arg >= 0) this.setThreshold(arg);
+        else if (width == null) var width = this.setWidth(arg);
+        else this.setHeight(arg);
     }
   }
   this.setPage(1);
@@ -58,10 +66,15 @@ Bento.prototype.scrollTo = function(x, y) {
   this.setScrollTop(y)
 };
 Bento.prototype.setScrollTop = function(top) {
+  var page = Math.ceil(top / this.height) + 1;
+  if (page != this.page) this.setPage(page)
   return this.scrollTop = top;
 };
 Bento.prototype.onResize = function(e) {
   this.setSize(e.width, e.height);
+};
+Bento.prototype.onResize = function(e) {
+  this.setScrollTop(window.scrollTop);
 };
 Bento.prototype.setSize = function(width, height) {
   this.setWidth(width);

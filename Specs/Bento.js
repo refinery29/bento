@@ -68,7 +68,24 @@ describe("Bento", function() {
         })
       })
     });
-  });  
+  });
+  describe('.setScrollTop', function() {
+    it ('should change the page', function() {
+      var bento = new Bento(1000, 500);
+      bento.setScrollTop(0)
+      expect(bento.page).toBe(1);
+      bento.setScrollTop(1)
+      expect(bento.page).toBe(2);
+      bento.setScrollTop(499)
+      expect(bento.page).toBe(2);
+      bento.setScrollTop(500)
+      expect(bento.page).toBe(2);
+      bento.setScrollTop(501)
+      expect(bento.page).toBe(3);
+      bento.setScrollTop(500)
+      expect(bento.page).toBe(2);
+    })
+  })
   describe('.setColumns', function() {
     it ('should set & update columns', function() {
       var bento = new Bento;
