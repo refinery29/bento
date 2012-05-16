@@ -168,14 +168,10 @@ Bento.prototype.allocate = function(item, prepend) {
     if (!max || max.height < column.height) max = column;
   }  
   for (var i = 0, intermediate = 0, match; column = this.columns[i++];) {
-    if (max.height) {
-      
-    }
     var distance = (column.height - min.height) / (max.height - min.height);
-    var visibility = max.height - column.height > height ? 1 : height / (max.height - column.height) : 1
+    var visibility = max.height ? max.height - column.height > height ? 1 : height / (max.height - column.height) : 1
     var wideness = ratio * (min.width / column.width);
-    console.log(wideness, rating, visibility, distance, [max.height, min.height], [column.height - min.height])
-    var score = (wideness   + 1) * ratioWeight)
+    var score = (wideness   + 1) * ratioWeight
               * (rating     + 1) * ratingWeight
               * (visibility + 1) * visibilityWeight
               * (distance   + 1) * distanceWeight;
