@@ -124,8 +124,8 @@ Bento.prototype.onElementSet = function(element) {
 }
 Bento.prototype.ratioWeight = 0;
 Bento.prototype.ratingWeight = 1;
-Bento.prototype.visibilityWeight = 0;
 Bento.prototype.distanceWeight = 1;
+Bento.prototype.visibilityWeight = 0;
 Bento.prototype.allocate = function(item, prepend) {
   if (!this.columns) return;
   var width = item.width
@@ -168,13 +168,15 @@ Bento.prototype.allocate = function(item, prepend) {
     if (!max || max.height < column.height) max = column;
   }  
   for (var i = 0, intermediate = 0, match; column = this.columns[i++];) {
-    var distance = (column.height - min.height) / (max.height - min.height);
-    var visibility = max.height ? max.height - column.height > height ? 1 : height / (max.height - column.height) : 1
+    var above = max.height - column.height;
+    var below = max.height - min.height;
+    var distance = max.height ? below ? 1 - (column.height - min.height) / below : 0 : 0
+    var visibility = max.height ? above ? above > height ? 1 : height / above : 1 : 1
     var wideness = ratio * (min.width / column.width);
-    var score = (wideness   + 1) * ratioWeight
-              * (rating     + 1) * ratingWeight
-              * (visibility + 1) * visibilityWeight
-              * (distance   + 1) * distanceWeight;
+    var score = (wideness * ratioWeight
+              + rating * ratingWeight
+              + visibility * visibilityWeight
+              + distance * distanceWeight) / 4
     if (intermediate < score) {
       intermediate = score;
       match = column;
