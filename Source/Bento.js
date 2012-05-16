@@ -13,8 +13,11 @@ var Bento = function() {
   for (var i = 0, j = arguments.length, arg; i < j; i++) {
     switch (typeof (arg = arguments[i])) {
       case 'object':
+      
         if (arg == null) continue;
-        if (arg.push) {
+        if (arg.nodeType) {
+          this.setElement(arg);
+        } else if (arg.push || typeof arg.item == 'function') {
           if (!columns) 
             var columns = this.setColumns(arg);
           else
@@ -28,17 +31,18 @@ var Bento = function() {
             window.onscroll = function(e) {
               self.onScroll(e)
             }
-          } else if (arg.nodeType) 
-            this.setElement(arg);
-          else
+          } else if (arg.width) {
             this.setSize(arg.width, arg.height); 
+          } else {
+            this.patterns = arg;
+          }
         }
         break;
       case 'function':
         if (!request) 
           var request = this.request = arg;
         else
-          this.scaler = arg;
+          this.renderer = arg;
       case 'number':
         if (arg < 1 && arg >= 0) this.setThreshold(arg);
         else if (width == null) var width = this.setWidth(arg);
@@ -108,7 +112,7 @@ Bento.prototype.setThreshold = function(threshold) {
 }
 Bento.prototype.update = function() {
   for (var i = 0, j = this.items.length; i < j; i++)
-    this.items[i].setColumn()
+    this.items[i].place()
 };
 Bento.prototype.setElement = function(element) {
   this.element = element;
@@ -118,41 +122,73 @@ Bento.prototype.onElementSet = function(element) {
   this.setWidth(element);
   this.setHeight(element);
 }
-Bento.prototype.getColumn = function(item, prepend) {
+Bento.prototype.ratioWeight = 0;
+Bento.prototype.ratingWeight = 1;
+Bento.prototype.visibilityWeight = 0;
+Bento.prototype.distanceWeight = 1;
+Bento.prototype.allocate = function(item, prepend) {
   if (!this.columns) return;
+  var width = item.width
+  var height = item.height
+  var ratio = width / height;
+  var rating = 1 - (item.rating || 0);
+  var bento = item.bento;
+  var ratioWeight = this.ratioWeight;
+  var ratingWeight = this.ratingWeight;
+  var visibilityWeight = this.visibilityWeight;
+  var distanceWeight = this.distanceWeight;
+  if (this.patterns) for (var property in this.patterns) {
+    var pattern = this.patterns[property];
+    if (pattern) {
+      if (pattern.ratio == null || (pattern.ratio[0] < ratio || ratio > pattern.ratio[1]))
+      if (pattern.probability == null || (Math.random() < pattern.probability))
+      if (pattern.rating == null || (pattern.rating[0] < rating || rating > pattern.rating[1])) {
+        if (pattern.weight == null) {
+          
+        } else weight = pattern.weight;
+        if (pattern.ratioWeight != null)
+          ratioWeight = pattern.ratioWeight
+        if (pattern.ratingWeight != null)
+          ratingWeight = pattern.ratingWeight
+        if (pattern.visibilityWeight != null)
+          visibilityWeight = pattern.visibilityWeight
+        if (pattern.distanceWeight != null)
+          distanceWeight = pattern.distanceWeight
+      }
+    }
+  }
 /*
   When an item doesnt fit any column, it gets downscaled. 
   Portait-oriented items are scaled to fit the most narrow
   column, while landscape oriented items are scaled to fit 
   in the widest column.
 */
-  if (item.width > this.maxWidth) {
-    var ratio = item.width / item.height;
-    var base = ((ratio > 1) ? this.maxWidth - (this.maxWidth - this.minWidth) / 2 : this.minWidth)
-    var threshold = this.threshold * (ratio > 1 ? 1.5 : 1);
-    var width = base;
-    var height = base * ratio;
-  } else {
-    var width = item.width;
-  }
-  for (var i = 0, j, min, column; column = this.columns[i++];) {
-    if (column.width != null) {
-      var proportion = Math.abs(column.width / width);
-      if (proportion >= 1
-        ? proportion - 1 <= (threshold || this.threshold) || (column.width == item.bento.maxWidth && ratio > 1)
-        : 1 - proportion <= (threshold || this.threshold) ) {
-        if (!min || column.height < min.height) {
-          j = i;
-          min = column;
-        }
-      }
+  for (var i = 0, min, max, column; column = this.columns[i++];) {
+    if (!min || min.height > column.height) min = column;
+    if (!max || max.height < column.height) max = column;
+  }  
+  for (var i = 0, intermediate = 0, match; column = this.columns[i++];) {
+    if (max.height) {
+      
+    }
+    var distance = (column.height - min.height) / (max.height - min.height);
+    var visibility = max.height - column.height > height ? 1 : height / (max.height - column.height) : 1
+    var wideness = ratio * (min.width / column.width);
+    console.log(wideness, rating, visibility, distance, [max.height, min.height], [column.height - min.height])
+    var score = (wideness   + 1) * ratioWeight)
+              * (rating     + 1) * ratingWeight
+              * (visibility + 1) * visibilityWeight
+              * (distance   + 1) * distanceWeight;
+    if (intermediate < score) {
+      intermediate = score;
+      match = column;
     }
   }
-  return min;
+  return match;
 };
 Bento.prototype.push = function() {
   for (var i = 0, j = arguments.length, position; i < j; i++) 
-    this.items.push(Bento.Item(arguments[i], this));
+    this.items.push(Bento.Item(this, this.renderer, arguments[i]));
 };
 Bento.prototype.concat = function(enumerable) {
   for (var i = 0, j = enumerable.length; i < j; i++)
@@ -195,7 +231,7 @@ Bento.Column.prototype.push = function() {
   for (var i = 0, j = arguments.length, position; i < j; i++) {
     var item = Bento.Item(arguments[i], this.bento);
     this.items.push(item);
-    item.setColumn(this)
+    item.place(this)
   }
 };
 Bento.Column.prototype.setBento = function(bento) {
@@ -221,13 +257,16 @@ Bento.Item = function(first) {
         if (arg instanceof Bento)
           this.setBento(arg);
         else if (arg instanceof Bento.Column)
-          this.setColumn(arg);
+          this.place(arg);
         else if (arg instanceof Bento.Item)
           continue
         else if (arg.nodeType)
           this.setElement(arg);
         else
           this.setContent(arg);
+        break;
+      case 'function':
+        this.onRender = arg;
         break;
       case 'undefined':
         break;
@@ -241,19 +280,19 @@ Bento.Item.prototype.setHeight  = Bento.prototype.setHeight;
 Bento.Item.prototype.setWidth   = Bento.prototype.setWidth;
 Bento.Item.prototype.setElement = Bento.prototype.setElement;
 Bento.Item.prototype.update = function() {
-  this.setColumn()
+  this.place()
 }
 Bento.Item.prototype.setBento = function(bento) {
   this.bento = bento;
-  if (!this.column) this.setColumn()
+  if (!this.column && this.width) this.place()
 };
 Bento.Item.prototype.setScale = function(scale) {
   return this.scale = scale;
 };
-Bento.Item.prototype.setColumn = function(column, prepend, reset) {
+Bento.Item.prototype.place = function(column, prepend, reset) {
   if (!column) {
     if (!this.bento) return;
-    column = this.bento.getColumn(this, prepend);
+    column = this.bento.allocate(this, prepend);
   }
   if (!column) return;
   if (column.items.indexOf(this) == -1) {
@@ -265,15 +304,16 @@ Bento.Item.prototype.setColumn = function(column, prepend, reset) {
     column.element.insertBefore(this.element, prepend && column.element.firstChild);
 };
 Bento.Item.prototype.setContent = function(content) {
-  var scale = content.scale || this.bento && this.bento.scaler && this.bento.scaler(content, this);
-  if (scale) this.setScale(scale)
+  if (content.scale) this.setScale(content.scale)
   if (content.width != null) {
     this.setSize(content.width, content.height);
   }
-  this.render();
+  this.setElement(this.render(content, this.rendered));
+  if (this.column && this.column.element) this.column.element.appendChild(this.element)
 };
-Bento.Item.prototype.render = function() {
-  
+Bento.Item.prototype.render = function(content, element) {
+  if (this.onRender) element = this.onRender(content, element)
+  return element
 };
 Bento.Item.prototype.stretch = function() {
   

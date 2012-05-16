@@ -76,9 +76,18 @@ describe("Bento", function() {
       
       describe('and items are overly large sized', function() {
         it ('should downscale items: portait items take smallest columns, landspace take widest', function() {
-          var items = [{width: 768, height: 1024}, {width: 1024, height: 768}, {width: 512, height: 384}/*,
-                       {width: 768, height: 1024}, {width: 1024, height: 768}, {width: 512, height: 384}*/];
-          var bento = new Bento([300, 200, 100], items);
+          var items = [{width: 768, height: 1024}, {width: 1024, height: 768}, {width: 512, height: 384},
+                       {width: 768, height: 1024}, {width: 1024, height: 768}, {width: 512, height: 384}];
+          var bento = new Bento([300, 200, 100], {
+            'move_wide_images_to_biggest_column': {
+              ratio: [1, 3],
+              weight: 1
+            },
+            'move_narrow_images_to_smallest_column': {
+              ratio: [0, 1],
+              weight: 0
+            },
+          }, items);
           expect(bento.items[0].column).toBe(bento.columns[2]);
           expect(bento.items[1].column).toBe(bento.columns[0]);
           expect(bento.items[2].column).toBe(bento.columns[1]);
