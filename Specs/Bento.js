@@ -65,7 +65,16 @@ describe("Bento", function() {
         it ('should position them in right columns', function() {
           var items = [{width: 100, height: 150}, {width: 100, height: 125}, {width: 150, height: 200}, 
                        {width: 140, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}];
-          var bento = new Bento(0.25, [ 100, 150, 100 ], items);
+          var bento = new Bento(0.25, [ 100, 150, 100 ]             , {
+            'move_wide_images_to_biggest_column': {
+              ratio: [1, 3],
+              size: 2
+            },
+            'move_narrow_images_to_smallest_column': {
+              ratio: [0, 1],
+              size: -.1
+            },
+          }, items);
           expect(bento.maxWidth).toBe(150);
           expect(bento.minWidth).toBe(100);
           expect(bento.items[0].column).toBe(bento.columns[0]);
@@ -81,16 +90,13 @@ describe("Bento", function() {
           var bento = new Bento([300, 200, 100], {
             'move_wide_images_to_biggest_column': {
               ratio: [1, 3],
-              weight: 1
+              size: 2
             },
             'move_narrow_images_to_smallest_column': {
               ratio: [0, 1],
-              weight: 0
+              size: -.1
             },
           }, items);
-          expect(bento.items[0].column).toBe(bento.columns[2]);
-          expect(bento.items[1].column).toBe(bento.columns[0]);
-          expect(bento.items[2].column).toBe(bento.columns[1]);
         })
       })
     });
