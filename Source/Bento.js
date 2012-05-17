@@ -122,7 +122,7 @@ Bento.prototype.onElementSet = function(element) {
   this.setWidth(element);
   this.setHeight(element);
 }
-Bento.prototype.ratioWeight = 0.1;
+Bento.prototype.ratioWeight = 1;
 Bento.prototype.ratingWeight = 1;
 Bento.prototype.distanceWeight = 1;
 Bento.prototype.visibilityWeight = 1;
@@ -173,7 +173,7 @@ Bento.prototype.getPosition = function(item, prepend) {
     var below = max.height - min.height;
     var distance = max.height ? below ? 1 - (column.height - min.height) / below : 0 : 0
     var visibility = max.height ? above ? above >= height ? 1 : 1 - above / height: 1 : 1
-    var wideness = ratio * (column.width / min.width);
+    var wideness = Math.min(ratio * (column.width / min.width), 4) / 4;
     var score = (rating     * ratingWeight
               + visibility  * visibilityWeight
               + distance    * distanceWeight
