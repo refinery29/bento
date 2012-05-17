@@ -90,7 +90,7 @@ describe("Bento", function() {
           var bento = new Bento([300, 200, 100], {
             'move_wide_images_to_biggest_column': {
               ratio: [1, 3],
-              size: 1.5
+              size: 2
             },
             'move_narrow_images_to_smallest_column': {
               ratio: [0, 1],
@@ -106,6 +106,30 @@ describe("Bento", function() {
         })
       })
     });
+    describe('when item is set to span between multiple columns', function() {
+      it ('should take space in both columns', function() {
+        
+        var items = [{width: 200, height: 750}, {width: 1024, height: 768}, {width: 512, height: 384},
+                     {width: 1024, height: 768}, {width: 200, height: 750}, {width: 200, height: 240}, {width: 1024, height: 768}];
+        var bento = new Bento([200, 300, 200], {
+          'span_wide_images': {
+            ratio: [1, 3],
+            span: 2
+          }
+        }, items);
+        expect(bento.items[0].column).toBe(bento.columns[0]);
+        expect(bento.items[1].column).toBe(bento.columns[1]);
+        expect(bento.items[1].width).toBe(500);
+        expect(bento.items[1].height).toBe(375)
+        expect(bento.items[2].column).toBe(bento.columns[1]);
+        expect(bento.items[2].width).toBe(500);
+        expect(bento.items[2].height).toBe(375)
+        expect(bento.items[3].column).toBe(bento.columns[0]);
+        expect(bento.items[4].column).toBe(bento.columns[2]);
+        expect(bento.items[5].column).toBe(bento.columns[0]);
+        expect(bento.items[6].column).toBe(bento.columns[0]);
+      })
+    })
   });
   describe('.setScrollTop', function() {
     it ('should change the page', function() {

@@ -122,53 +122,49 @@ Bento.prototype.onElementSet = function(element) {
   this.setWidth(element);
   this.setHeight(element);
 }
-Bento.prototype.ratioWeight = 1;
 Bento.prototype.ratingWeight = 1;
 Bento.prototype.distanceWeight = 1;
 Bento.prototype.visibilityWeight = 1;
-Bento.prototype.getPosition = function(item, prepend) {
+Bento.prototype.getPosition = function(item, prepend, span) {
   if (!this.columns) return;
   var width = item.width
   var height = item.height
   var ratio = width / height;
   var rating = 1 - (item.rating || 0);
   var bento = item.bento;
-  var ratioWeight = this.ratioWeight;
   var ratingWeight = this.ratingWeight;
   var visibilityWeight = this.visibilityWeight;
   var distanceWeight = this.distanceWeight;
-  var size = 1
+  var size = 0;
+  if (span == null) span = 1;
   if (this.patterns) for (var property in this.patterns) {
     var pattern = this.patterns[property];
     if (pattern) {
       if (pattern.ratio == null || (pattern.ratio[0] <= ratio && ratio <= pattern.ratio[1]))
       if (pattern.probability == null || (Math.random() <= pattern.probability))
       if (pattern.rating == null || (pattern.rating[0] <= rating && rating <= pattern.rating[1])) {
-        if (pattern.size == null) {
-          
-        } else size = pattern.size;
-        if (pattern.ratioWeight != null)
-          ratioWeight = pattern.ratioWeight
+        if (pattern.size != null) 
+          size = pattern.size;
+        if (pattern.span != null)
+          span = pattern.span;
         if (pattern.ratingWeight != null)
-          ratingWeight = pattern.ratingWeight
+          ratingWeight = pattern.ratingWeight;
         if (pattern.visibilityWeight != null)
-          visibilityWeight = pattern.visibilityWeight
+          visibilityWeight = pattern.visibilityWeight;
         if (pattern.distanceWeight != null)
-          distanceWeight = pattern.distanceWeight
+          distanceWeight = pattern.distanceWeight;
       }
     }
   }
-/*
-  When an item doesnt fit any column, it gets downscaled. 
-  Portait-oriented items are scaled to fit the most narrow
-  column, while landscape oriented items are scaled to fit 
-  in the widest column.
-*/
+  if (this.subpatterns) {
+    
+  }
   for (var i = 0, min, max, column; column = this.columns[i++];) {
     if (!min || min.height > column.height) min = column;
     if (!max || max.height < column.height) max = column;
-  }  
-  for (var i = 0, intermediate = 0, match; column = this.columns[i++];) {
+  }
+  
+  for (var i = 0, intermediate = 0, match; column = this.columns[i]; i++) {
     var above = max.height - column.height;
     var below = max.height - min.height;
     var distance = max.height ? below ? 1 - (column.height - min.height) / below : 0 : 0
@@ -177,17 +173,38 @@ Bento.prototype.getPosition = function(item, prepend) {
     var score = (rating     * ratingWeight
               + visibility  * visibilityWeight
               + distance    * distanceWeight
-              + wideness    * ratioWeight * size) / 4;
+              + wideness    * size) / 4;
+    if (span > 1) {
+      if (i + span - 1 >= this.columns.length) {
+        score = 0
+      } else {
+        for (var j = i + 1, k = i + Math.ceil(span); j < k; j++) {
+          var next = this.columns[j];
+          if (!next || next.height > column.height) {
+            score = 0;
+            break;
+          }
+        }
+      }
+    }
     if (intermediate < score) {
       intermediate = score;
       match = column;
     }
   }
+  if (span > 1 && match) {
+    var matches = [match];
+    for (var j = this.columns.indexOf(match) + 1, k = j + Math.ceil(span) - 1; j < k; j++) 
+      matches.push(this.columns[j])
+    return matches;
+  }
   return match;
 };
+var delay = 0;
 Bento.prototype.push = function() {
+  var self = this;
   for (var i = 0, j = arguments.length, position; i < j; i++) 
-    this.items.push(Bento.Item(this, this.renderer, arguments[i]));
+        self.items.push(Bento.Item(self, self.renderer, arguments[i]))
 };
 Bento.prototype.concat = function(enumerable) {
   for (var i = 0, j = enumerable.length; i < j; i++)
@@ -288,19 +305,40 @@ Bento.Item.prototype.setBento = function(bento) {
 Bento.Item.prototype.setScale = function(scale) {
   return this.scale = scale;
 };
-Bento.Item.prototype.setPosition = function(column, prepend, reset) {
-  if (!column) {
+Bento.Item.prototype.setPosition = function(position, prepend, reset) {
+  if (!position) {
     if (!this.bento) return;
-    column = this.bento.getPosition(this, prepend);
+    position = this.bento.getPosition(this, prepend);
   }
-  if (!column) return;
-  if (column.items.indexOf(this) == -1) {
-    column.setHeight(column.height + (column.width / this.width) * this.height);
-    this.column = column;
-    column.push(this);
+  if (!position) return;
+  if (position.push && position.map) {
+    var span = position.splice(1);
+    position = position[0];
   }
-  if (this.element && column.element)
-    column.element.insertBefore(this.element, prepend && column.element.firstChild);
+  if (position.items.indexOf(this) == -1) {
+    var bento = this.bento;
+    if (bento) var columns = bento.columns;
+    var base = position.width;
+    if (span && bento) {
+      this.span = span;
+      var index = columns.indexOf(position);
+      for (var i = index + 1, j = i + span.length; i < j; i++)
+        base += columns[i].width;
+    } 
+    var height = (base / this.width) * this.height;
+    if (base) {
+      this.setWidth(base);
+      this.setHeight(height)
+    }
+    position.setHeight(position.height + height);
+    if (span && bento) for (var i = index + 1, j = i + span.length; i < j; i++) {
+      var col = columns[i];
+      col.whitespace = (col.whitespace || 0) + position.height - col.height;
+      col.setHeight(position.height)
+    }
+    this.column = position;
+    position.push(this);
+  }
 };
 Bento.Item.prototype.setContent = function(content) {
   if (content.scale) this.setScale(content.scale)
@@ -308,7 +346,9 @@ Bento.Item.prototype.setContent = function(content) {
     this.setSize(content.width, content.height);
   }
   this.setElement(this.render(content, this.rendered));
-  if (this.column && this.column.element) this.column.element.appendChild(this.element)
+  if (this.column && this.column.element) {
+    this.column.element.appendChild(this.element)
+  }
 };
 Bento.Item.prototype.render = function(content, element) {
   if (this.onRender) element = this.onRender(content, element)
