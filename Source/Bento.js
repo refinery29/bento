@@ -175,8 +175,9 @@ Bento.prototype.getPosition = function(item, prepend, span) {
     if (!min || min.height > column.height) min = column;
     if (!max || max.height < column.height) max = column;
   }
-  
-  columns: for (var i = 0, intermediate = 0, match; column = this.columns[i]; i++) {
+  var bestHoleScore = 0;
+  var intermediate = 0;
+  columns: for (var i = 0, match; column = this.columns[i]; i++) {
     var fullWidth = column.width;
     if (span > 1) {
       if (i + span - 1 >= this.columns.length) {
@@ -191,7 +192,7 @@ Bento.prototype.getPosition = function(item, prepend, span) {
       }
     }
     if (column.holes) 
-      for (var l = 0, hole, bestHole, bestHoleScore = 0; hole = column.holes[l++];) {
+      for (var l = 0, hole, bestHole; hole = column.holes[l++];) {
         var ratio = item.width / item.height;
         var width = hole[1] * ratio;
         if (width > column.width) {
@@ -221,7 +222,7 @@ Bento.prototype.getPosition = function(item, prepend, span) {
       intermediate = score;
       match = column;
     }
-  }
+  }  
   if (bestHoleScore > score) {
     return bestHole;
   }
