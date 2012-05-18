@@ -107,10 +107,9 @@ describe("Bento", function() {
       })
     });
     describe('when item is set to span between multiple columns', function() {
-      it ('should take space in both columns', function() {
-        
+      it ('should take space in both columns and fill holes', function() {
         var items = [{width: 200, height: 750}, {width: 1024, height: 768}, {width: 512, height: 384},
-                     {width: 1024, height: 768}, {width: 200, height: 750}, {width: 200, height: 240}, {width: 1024, height: 768}];
+                     {width: 1024, height: 768}, {width: 200, height: 750},  {width: 200, height: 240},  {width: 1000, height: 1000}, /*{width: 1024, height: 768}*/];
         var bento = new Bento([200, 300, 200], {
           'span_wide_images': {
             ratio: [1, 3],
@@ -126,8 +125,9 @@ describe("Bento", function() {
         expect(bento.items[2].height).toBe(375)
         expect(bento.items[3].column).toBe(bento.columns[0]);
         expect(bento.items[4].column).toBe(bento.columns[2]);
-        expect(bento.items[5].column).toBe(bento.columns[0]);
-        expect(bento.items[6].column).toBe(bento.columns[0]);
+        expect(bento.items[5].column).toBe(bento.columns[2]);
+        expect(bento.items[4].height).toBe(375)
+        expect(bento.items[5].height).toBe(240)
       })
     })
   });
