@@ -366,7 +366,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
     if (typeof position[0] == 'number') { //filling hole
       var hole = position;
       position = position[3];
-      if (hole[2]) this.before = hole[2].element;
+      this.hole = hole;
       var collection = position.items;
       var ratio = this.width / this.height;
       var width = hole[1] * ratio;
@@ -379,7 +379,6 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
       for (var i = collection.indexOf(hole[2]), item; item = collection[++i];) {
         if (item.offsetTop) item.setOffsetTop(item.setOffsetTop - height);
       }
-      
       position.holes.splice(position.holes.indexOf(hole), 1);
     } else {  
       var span = position.slice(1);
@@ -396,7 +395,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
       var index = columns.indexOf(position);
       for (var i = 0, j = span.length; i < j; i++)
         width += span[i].width
-    } 
+    } else delete this.span;
     var height = Math.floor((width / this.width) * this.height);
     if (width) {
       this.setWidth(width);
@@ -407,13 +406,12 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
       var holes = col.holes;
       if (!holes) holes = col.holes = [];
       else var last = holes[holes.length - 1];
+      col.whitespace = (col.whitespace || 0) + position.height + height - col.height;
       if (!last || last[0] + last[1] < position.height) {
         if (position.height > col.height) {
-          holes.push([col.height, position.height - col.height, col.items[col.items.length - 1], col]);
+          holes.push([col.height, position.height - col.height, col.items[col.items.length - 1], col, col.whitespace]);
         }
-      } else
-        last[1] += position.height - col.height;
-      col.whitespace = (col.whitespace || 0) + position.height - col.height;
+      } else last[1] += position.height - col.height;
       col.setHeight(position.height + height)
     }
     if (!hole) position.setHeight(position.height + height);
@@ -431,12 +429,22 @@ Bento.Item.prototype.setContent = function(content) {
     this.setSize(content.width, content.height);
   }
   this.setElement(this.render(content, this.rendered));
-  if (this.column && this.column.whitespace) {
-    this.setOffsetTop(this.column.whitespace);
+  if (!this.column) return;
+  var hole = this.hole;
+  if (!hole) {
+    var margin = this.column.whitespace;
     delete this.column.whitespace;
+    if (margin) this.column.setHeight(this.column.height + margin)
+  } else var margin = hole[4];
+  if (margin) {
+    this.setOffsetTop(margin);
   }
-  if (this.column && this.column.element) {
-    this.column.element.insertBefore(this.element, this.before)
+  if (this.span && this.bento.columns.indexOf(this.span[0]) < this.bento.columns.indexOf(this.column)) {
+    this.element.style.marginLeft = this.column.width - this.width + 'px';
+  }
+  if (this.column.element) {
+    var after = hole && hole[2] && hole[2].element;
+    this.column.element.insertBefore(this.element, after && after.nextSibling)
   }
 };
 Bento.Item.prototype.render = function(content, element) {
