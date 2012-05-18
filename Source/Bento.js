@@ -127,7 +127,7 @@ Bento.prototype.distanceWeight = 1;
 Bento.prototype.visibilityWeight = 1;
 Bento.prototype.holeFillWeight = 1;
 Bento.prototype.holeFixWeight = 1;
-Bento.prototype.holeDistanceWeight = 1;
+Bento.prototype.holeDistanceWeight = 2;
 Bento.prototype.getPosition = function(item, prepend, span) {
   if (!this.columns) return;
   var width = item.width
@@ -177,19 +177,29 @@ Bento.prototype.getPosition = function(item, prepend, span) {
   }
   var bestHoleScore = 0;
   var intermediate = 0;
-  columns: for (var i = 0, match; column = this.columns[i]; i++) {
+  for (var i = 0, match, reversed, direction; column = this.columns[i]; i++) {
     var fullWidth = column.width;
     if (span > 1) {
-      if (i + span - 1 >= this.columns.length) {
-        continue;
-      } else {
+      if (i + span - 1 <= this.columns.length) {
         for (var j = i + 1, k = i + Math.ceil(span); j < k; j++) {
           var next = this.columns[j];
           if (!next || next.height > column.height)
-            continue columns;
+            break;
           else fullWidth += next.width;
         }
+        if (j == k) reversed = false;
       }
+      if (reversed == null && i - span + 1 > -1) {
+        fullWidth = column.width;
+        for (var j = i - 1, k = i - Math.ceil(span); j > k; j--) {
+          var previous = this.columns[j];
+          if (!previous || previous.height > column.height)
+            break;
+          else fullWidth += previous.width;
+        }
+        if (j == k) reversed = true;
+      }
+      if (reversed == null) continue;
     }
     if (column.holes) 
       for (var l = 0, hole, bestHole; hole = column.holes[l++];) {
@@ -200,7 +210,7 @@ Bento.prototype.getPosition = function(item, prepend, span) {
         } else {
           var holeFill = hole[1] / (width / ratio);
         }
-        var holeDistance = 1 - hole[0] / max.height;
+        var holeDistance = 1 - hole[0] / max.height
         var holeScore = (holeFill * holeFillWeight
                       + holeDistance * holeDistanceWeight
                       + holeFixWeight) / 4;
@@ -208,11 +218,11 @@ Bento.prototype.getPosition = function(item, prepend, span) {
           bestHoleScore = holeScore;
           bestHole = hole;
         }
-      }
+      }  
     var above = max.height - column.height;
     var below = max.height - min.height;
-    var distance = max.height ? below ? 1 - (column.height - min.height) / below : 0 : 0
-    var visibility = max.height ? above ? above >= height ? 1 : 1 - above / height: 1 : 1
+    var distance = max.height ? below ? 1 - (column.height - min.height) / below : 1 : 1
+    var visibility = max.height ? above ? above >= height ? 1 : above / height : 1 : 1
     var wideness = Math.min(ratio * (fullWidth / min.width), 4) / 4;
     var score = (rating     * ratingWeight
               + visibility  * visibilityWeight
@@ -221,15 +231,22 @@ Bento.prototype.getPosition = function(item, prepend, span) {
     if (intermediate < score) {
       intermediate = score;
       match = column;
-    }
-  }  
-  if (bestHoleScore > score) {
-    return bestHole;
+      direction = !reversed;
+    }  
+    reversed = null;
   }
+  if (span == 1 && bestHoleScore > score)
+    return bestHole;
   if (span > 1 && match) {
     var matches = [match];
-    for (var j = this.columns.indexOf(match) + 1, k = j + Math.ceil(span) - 1; j < k; j++) 
-      matches.push(this.columns[j])
+    if (direction) {
+      for (var j = this.columns.indexOf(match) + 1, k = j + Math.ceil(span) - 1; j < k; j++) {
+        matches.push(this.columns[j])
+      }
+    } else {
+      for (var j = this.columns.indexOf(match) - 1, k = j - Math.ceil(span) + 1; j > k; j--) 
+        matches.push(this.columns[j])
+    }
     return matches;
   }
   return match;
@@ -362,9 +379,10 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
       for (var i = collection.indexOf(hole[2]), item; item = collection[++i];) {
         if (item.offsetTop) item.setOffsetTop(item.setOffsetTop - height);
       }
+      
       position.holes.splice(position.holes.indexOf(hole), 1);
     } else {  
-      var span = position.splice(1);
+      var span = position.slice(1);
       position = position[0];
     }
     
@@ -376,33 +394,35 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
     if (span && bento) {
       this.span = span;
       var index = columns.indexOf(position);
-      for (var i = index + 1, j = i + span.length; i < j; i++)
-        width += columns[i].width;
+      for (var i = 0, j = span.length; i < j; i++)
+        width += span[i].width
     } 
-    var height = (width / this.width) * this.height;
+    var height = Math.floor((width / this.width) * this.height);
     if (width) {
       this.setWidth(width);
       this.setHeight(height)
     }
-    position.setHeight(position.height + height);
-    if (span && bento) for (var i = index + 1, j = i + span.length; i < j; i++) {
-      var col = columns[i];
+    if (span && bento) for (var i = 0, j = span.length; i < j; i++) {
+      var col = span[i];
       var holes = col.holes;
       if (!holes) holes = col.holes = [];
       else var last = holes[holes.length - 1];
-      if (!last || last[0] + last[1] < position.height)
-        holes.push([col.height, position.height - col.height, col.items[col.items.length - 1], col]);
-      else
-        last[1] += col.height;
+      if (!last || last[0] + last[1] < position.height) {
+        if (position.height > col.height) {
+          holes.push([col.height, position.height - col.height, col.items[col.items.length - 1], col]);
+        }
+      } else
+        last[1] += position.height - col.height;
       col.whitespace = (col.whitespace || 0) + position.height - col.height;
-      col.setHeight(position.height)
+      col.setHeight(position.height + height)
     }
+    if (!hole) position.setHeight(position.height + height);
     this.column = position;
     position.push(this);
   }
 };
 Bento.Item.prototype.setOffsetTop = function(offsetTop) {
-  if (this.element) this.element.style.marginTop = offsetTop + 'px';
+  if (this.element) this.element.style.marginTop = Math.floor(offsetTop) + 'px';
   return this.offsetTop = offsetTop;
 }
 Bento.Item.prototype.setContent = function(content) {
