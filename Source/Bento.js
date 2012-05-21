@@ -295,7 +295,7 @@ Bento.Column.prototype.push = function() {
     var item = Bento.Item(arguments[i], this.bento);
     for (var k = 0, other; other = this.items[k]; k++)
       if (other.top > item.top) break;
-    this.items.push(item);
+    this.items.splice(k, 1, item);
     item.setPosition(this)
   }
 };
@@ -435,6 +435,10 @@ Bento.Item.prototype.setContent = function(content) {
   if (hole) {
     var last = hole[2];
     var subject = last || hole[3];
+    if (!last) margin = hole[0];
+    else if (last.hole) {
+      margin = hole[0] - last.hole[0] - last.height;
+    }
     if (subject.whitespace)
       this.whitespace = subject.whitespace - hole[1];
     delete subject.whitespace;
@@ -455,6 +459,7 @@ Bento.Item.prototype.setContent = function(content) {
     var after = hole && last && last.element;
     this.column.element.insertBefore(this.element, after && after.nextSibling)
   }
+  this.top = (margin || 0) + (last ? last.top + last.height : 0)
 };
 Bento.Item.prototype.render = function(content, element) {
   if (this.onRender) element = this.onRender(content, element)
