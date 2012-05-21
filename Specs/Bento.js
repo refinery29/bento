@@ -110,7 +110,7 @@ describe("Bento", function() {
       it ('should take space in both columns and fill holes', function() {
         var items = [{width: 200, height: 750},  {width: 1024, height: 768}, {width: 200, height: 300}, 
                      {width: 800, height: 600}, {width: 1024, height: 768}, {width: 100, height: 200}, 
-                     {width: 100, height: 200}, {width: 50, height: 106.25}];
+                     {width: 100, height: 200}, {width: 50, height: 100}];
         var bento = new Bento([200, 300, 200], {
           'span_wide_images': {
             ratio: [1, 3],
@@ -138,14 +138,14 @@ describe("Bento", function() {
         })).toEqual([true, true, true])
         expect(bento.columns.map(function(c) {
           return c.height
-        })).toEqual([1575, 1575, 1575])
+        })).toEqual([1550, 1575, 1575])
       })
     })
     
     describe('and there is no space on the right to span', function() {
       it ('should span to the left and then fill holes', function() {
         var items = [{width: 50, height: 100}, {width: 50, height: 150}, {width: 50, height: 200}, 
-                     {width: 100, height: 25}, {width: 50, height: 200}, {width: 200, height: 50}];
+                     {width: 100, height: 25}, {width: 50, height: 60}, {width: 200, height: 50}];
         var bento = new Bento([100, 100, 100], {
           'span_wide_images': {
             ratio: [1, 5],
@@ -158,6 +158,8 @@ describe("Bento", function() {
         expect(bento.items[3].column).toBe(bento.columns[1])
         expect(bento.items[4].column).toBe(bento.columns[0])
         expect(bento.items[5].column).toBe(bento.columns[0])
+        expect(bento.items[4].height).toBe(100)
+        expect(bento.items[4].width).toBe(83)
         expect(bento.columns.map(function(c) {
           return c.height
         })).toEqual([400, 400, 400])
