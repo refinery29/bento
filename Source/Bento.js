@@ -144,6 +144,8 @@ Bento.prototype.getPosition = function(item, prepend, span) {
   var holeFillThreshold = this.holeFillThreshold;
   var size = 0;
   if (span == null) span = 1;
+  
+  // Check against all registered patterns and collect modifiers
   if (this.patterns) for (var property in this.patterns) {
     var pattern = this.patterns[property];
     if (pattern) {
@@ -165,9 +167,8 @@ Bento.prototype.getPosition = function(item, prepend, span) {
       }
     }
   }
-  if (this.subpatterns) {
-    
-  }
+  
+  // Calculate columns with min and max heights
   for (var i = 0, min, max, column; column = this.columns[i++];) {
     if (!min || min.height > column.height) min = column;
     if (!max || max.height < column.height) max = column;
@@ -177,6 +178,7 @@ Bento.prototype.getPosition = function(item, prepend, span) {
   for (var i = 0, match, reversed, direction; column = this.columns[i]; i++) {
     var fullWidth = column.width;
     if (span > 1) {
+      // try spanning to the right
       if (i + span - 1 <= this.columns.length) {
         for (var j = i + 1, k = i + Math.ceil(span); j < k; j++) {
           var next = this.columns[j];
@@ -186,6 +188,7 @@ Bento.prototype.getPosition = function(item, prepend, span) {
         }
         if (j == k) reversed = false;
       }
+      // try spanning to the left
       if (reversed == null && i - span + 1 > -1) {
         fullWidth = column.width;
         for (var j = i - 1, k = i - Math.ceil(span); j > k; j--) {
@@ -199,23 +202,26 @@ Bento.prototype.getPosition = function(item, prepend, span) {
       if (reversed == null) continue;
     }  
     var ratio = item.width / item.height;
-    if (column.holes) 
-      for (var l = 0, hole, bestHole; hole = column.holes[l++];) {
-        var width = hole[1] * ratio;
-        var holeFill = width / column.width
-        if (holeFill > 1) {
-          if (holeFill - 1 > holeFillThreshold) continue;
-        } else {
-          if (holeFill < holeFillThreshold) continue;
-        }
-        var holeDistance = Math.max(1 - hole[0] / max.height, 0)
-        var holeScore = (holeFill * holeFillWeight
-                      + holeDistance * holeDistanceWeight) / 2;
-        if (holeScore > bestHoleScore) {
-          bestHoleScore = holeScore;
-          bestHole = hole;
-        }
-      }  
+    
+    // Find out hole that an item may fill
+    if (column.holes) for (var l = 0, hole, bestHole; hole = column.holes[l++];) {
+      var width = hole[1] * ratio;
+      var holeFill = width / column.width
+      if (holeFill > 1) {
+        if (holeFill - 1 > holeFillThreshold) continue;
+      } else {
+        if (holeFill < holeFillThreshold) continue;
+      }
+      var holeDistance = Math.max(1 - hole[0] / max.height, 0)
+      var holeScore = (holeFill * holeFillWeight
+                    + holeDistance * holeDistanceWeight) / 2;
+      if (holeScore > bestHoleScore) {
+        bestHoleScore = holeScore;
+        bestHole = hole;
+      }
+    }
+      
+    // Find out a column where an item fits best
     var above      = max.height - column.height;
     var below      = max.height - min.height;
     var distance   = max.height ? below ? 1 - (column.height - min.height) / below : 1 : 1
@@ -232,8 +238,12 @@ Bento.prototype.getPosition = function(item, prepend, span) {
     }  
     reversed = null;
   }
+  
+  // Fill a hole, if it's score higher than the best column score
   if (span == 1 && bestHoleScore > score)
     return bestHole;
+
+  // Collect columns affected by spanning
   if (span > 1 && match) {
     var matches = [match];
     if (direction) {
@@ -361,59 +371,84 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   }
   if (!position) return;
   if (position.push && position.map) {
-    if (typeof position[0] == 'number') { //filling hole
+    if (typeof position[0] == 'number') {
       var hole = position;
       position = position[3];
-      this.hole = hole;
-      var collection = position.items;
-      var ratio = this.width / this.height;
-      var width = Math.min(hole[1] * ratio, position.width);
-      var height = width / ratio
-      for (var i = collection.indexOf(hole[2]), item; item = collection[++i];) {
-        if (item.offsetTop) {
-          item.setOffsetTop(item.offsetTop - height);
-        }
-      }
-      for (var i = position.holes.indexOf(hole), next; next = position.holes[++i];)
-        next[4] -= hole[1];
-      position.holes.splice(position.holes.indexOf(hole), 1);
     } else {  
       var span = position.slice(1);
       position = position[0];
     }
+  }
+  if (position.items.indexOf(this) > -1) return;
+  var offsetTop = 0;
+  if (hole) {
+    // Fills a hole and updates top offset for the next item
+    this.hole = hole;
+    var ratio = this.width / this.height;
+    var width = Math.min(hole[1] * ratio, position.width);
+    position.holes.splice(position.holes.indexOf(hole), 1);
+    var previous = hole[2]
+    if (!previous) {
+      offsetTop = hole[0];
+    } else if (previous.hole)
+      offsetTop = hole[0] - previous.hole[0] - previous.height;
+    var next = position.items[position.items.indexOf(previous) + 1];
+    if (next && next.offsetTop) next.setOffsetTop(next.offsetTop - (width / ratio) - offsetTop);
+  } else
+    previous = position.items[position.items.length - 1];
+  var subject = previous || position;
+  if (subject.whitespace) {
+    if (!hole) 
+      offsetTop = subject.whitespace;
+    else {
+      if (previous) offsetTop = hole[0] - subject.top - subject.height;
+      this.whitespace = subject.whitespace - hole[1] - offsetTop
+    }
+    delete subject.whitespace;
+  }
+
+  // Add top offset to the item if applicable
+  this.top = offsetTop + (previous ? previous.top + previous.height : 0);
+  this.previous = previous;
+  if (offsetTop) this.setOffsetTop(offsetTop);
+  
+  var bento = this.bento;
+  if (bento) 
+    var columns = bento.columns;
+  if (width == null)
+    width = position.width;
     
+  // Calculate width for spanning item
+  if (span && bento) {
+    this.span = span;
+    for (var i = 0, j = span.length; i < j; i++)
+      width += span[i].width
+  } else delete this.span;
+  
+  // Update item dimensions
+  var height = Math.floor((width / this.width) * this.height);
+  if (width) {
+    this.setWidth(width);
+    this.setHeight(height)
   }
-  if (position.items.indexOf(this) == -1) {
-    var bento = this.bento;
-    if (bento) var columns = bento.columns;
-    if (width == null) var width = position.width;
-    if (span && bento) {
-      this.span = span;
-      var index = columns.indexOf(position);
-      for (var i = 0, j = span.length; i < j; i++)
-        width += span[i].width
-    } else delete this.span;
-    var height = Math.floor((width / this.width) * this.height);
-    if (width) {
-      this.setWidth(width);
-      this.setHeight(height)
-    }
-    if (span && bento) for (var i = 0, j = span.length; i < j; i++) {
-      var col = span[i];
-      var holes = col.holes;
-      if (!holes) holes = col.holes = [];
-      var last = col.items[col.items.length - 1]
-      var subject = last || col;
-      if (position.height + height >= col.height)
-        subject.whitespace = (subject.whitespace || 0) + (position.height + height - col.height);
-      if (position.height > col.height)
-        holes.push([col.height, position.height - col.height, last, col]);
-      col.setHeight(position.height + height)
-    }
-    if (!hole) position.setHeight(position.height + height);
-    this.column = position;
-    position.push(this);
+  // Register holes created by an multi column spanning item
+  if (span && bento) for (var i = 0, j = span.length; i < j; i++) {
+    var col = span[i];
+    var holes = col.holes;
+    if (!holes) holes = col.holes = [];
+    var last = col.items[col.items.length - 1]
+    var subject = last || col;
+    if (position.height + height >= col.height)
+      subject.whitespace = (subject.whitespace || 0) + (position.height + height - col.height);
+    if (position.height > col.height)
+      holes.push([col.height, position.height - col.height, last, col]);
+    col.setHeight(position.height + height)
   }
+  
+  // Register item in the column
+  this.column = position;
+  if (!hole) position.setHeight(position.height + height);
+  position.push(this);
 };
 Bento.Item.prototype.setOffsetTop = function(offsetTop) {
   if (this.element) this.element.style.marginTop = Math.floor(offsetTop) + 'px';
@@ -426,34 +461,16 @@ Bento.Item.prototype.setContent = function(content) {
   }
   this.setElement(this.render(content, this.rendered));
   if (!this.column) return;
-  var hole = this.hole;
-  if (hole) {
-    var last = hole[2];
-    var subject = last || hole[3];
-    if (!last) margin = hole[0];
-    else if (last.hole) {
-      margin = hole[0] - last.hole[0] - last.height;
-    }
-    if (subject.whitespace)
-      this.whitespace = subject.whitespace - hole[1];
-    delete subject.whitespace;
-  } else {
-    var last = this.column.items[this.column.items.length - 2];
-    var subject = last || this.column;
-    var margin = subject.whitespace;
-    subject.clearer = this;
-    delete subject.whitespace;
-  }
-  if (margin) this.setOffsetTop(margin);
-  this.top = (this.offsetTop || 0) + (last ? last.top + last.height : 0)
   if (this.span && this.element) {
     if (this.bento.columns.indexOf(this.span[0]) < this.bento.columns.indexOf(this.column)) {
       this.element.style.marginLeft = this.column.width - this.width + 'px';
     }
   }  
   if (this.column.element) {
-    var after = hole && last && last.element;
-    this.column.element.insertBefore(this.element, after && after.nextSibling || hole && this.column.element.firstChild)
+    var prev = this.hole && this.previous && this.previous.element;
+    var after = prev ? prev.nextSibling : this.hole && this.column.element.firstChild
+    this.column.element.insertBefore(this.element, after)
+    if (this.offsetTop) this.setOffsetTop(this.offsetTop);
   }
 };
 Bento.Item.prototype.render = function(content, element) {
