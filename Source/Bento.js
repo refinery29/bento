@@ -367,13 +367,8 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
       this.hole = hole;
       var collection = position.items;
       var ratio = this.width / this.height;
-      var width = hole[1] * ratio;
-      if (width > position.width) {
-        width = position.width;
-        var height = ratio * this.height
-      } else {
-        height = width / ratio;
-      }
+      var width = Math.min(hole[1] * ratio, position.width);
+      var height = width / ratio
       for (var i = collection.indexOf(hole[2]), item; item = collection[++i];) {
         if (item.offsetTop) {
           item.setOffsetTop(item.offsetTop - height);
@@ -409,7 +404,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
       if (!holes) holes = col.holes = [];
       var last = col.items[col.items.length - 1]
       var subject = last || col;
-      if (position.height >= col.height)
+      if (position.height + height >= col.height)
         subject.whitespace = (subject.whitespace || 0) + (position.height + height - col.height);
       if (position.height > col.height)
         holes.push([col.height, position.height - col.height, last, col]);
@@ -450,6 +445,7 @@ Bento.Item.prototype.setContent = function(content) {
     delete subject.whitespace;
   }
   if (margin) this.setOffsetTop(margin);
+  this.top = (this.offsetTop || 0) + (last ? last.top + last.height : 0)
   if (this.span && this.element) {
     if (this.bento.columns.indexOf(this.span[0]) < this.bento.columns.indexOf(this.column)) {
       this.element.style.marginLeft = this.column.width - this.width + 'px';
@@ -457,17 +453,10 @@ Bento.Item.prototype.setContent = function(content) {
   }  
   if (this.column.element) {
     var after = hole && last && last.element;
-    this.column.element.insertBefore(this.element, after && after.nextSibling)
+    this.column.element.insertBefore(this.element, after && after.nextSibling || hole && this.column.element.firstChild)
   }
-  this.top = (margin || 0) + (last ? last.top + last.height : 0)
 };
 Bento.Item.prototype.render = function(content, element) {
   if (this.onRender) element = this.onRender(content, element)
   return element
-};
-Bento.Item.prototype.stretch = function() {
-  
-};
-Bento.Item.prototype.stretch = function() {
-  
 };
