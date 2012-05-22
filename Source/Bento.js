@@ -429,6 +429,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   
   // Update item dimensions
   var height = Math.floor((width / this.width) * this.height);
+  if (hole && hole[1] > height) this.whitespace += hole[1] - height;
   if (width) {
     this.setWidth(width);
     this.setHeight(height)
