@@ -314,7 +314,7 @@ Bento.Column.prototype.setBento = function(bento) {
 };
 /*
   Bento item is a wrapper over a content object. It knows its
-  size and thus it helps bento to choose a right column.
+  size and thus it helps bento to choose the right column.
   `Bento.Item` function may be used as a constructor and a simple
   function. When a function receives a constructed `Bento.Item` object
   it repurposes it to work with given bento and column.
@@ -388,11 +388,13 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
     var width = Math.min(hole[1] * ratio, position.width);
     position.holes.splice(position.holes.indexOf(hole), 1);
     var previous = hole[2]
+    var next = position.items[position.items.indexOf(previous) + 1];
     if (!previous) {
       offsetTop = hole[0];
-    } else if (previous.hole)
+    } else if (previous.hole) {
       offsetTop = hole[0] - previous.hole[0] - previous.height;
-    var next = position.items[position.items.indexOf(previous) + 1];
+    } else
+      offsetTop = hole[0] - previous.top - previous.height
     if (next && next.offsetTop) next.setOffsetTop(next.offsetTop - (width / ratio) - offsetTop);
   } else
     previous = position.items[position.items.length - 1];
