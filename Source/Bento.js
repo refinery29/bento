@@ -452,7 +452,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
     if (position.height + height >= col.height)
       subject.whitespace = (subject.whitespace || 0) + (position.height + height - col.height) + this.bento.gutter;
     if (position.height > col.height)
-      holes.push([col.height, position.height - col.height, col]);
+      holes.push([col.height, position.height - col.height + this.bento.gutter, col]);
     col.setHeight(position.height + height + this.bento.gutter)
   }
   
