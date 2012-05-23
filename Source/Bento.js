@@ -478,7 +478,8 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   if (this.element && this.content) this.setContent(this.content);
 };
 Bento.Item.prototype.setOffsetTop = function(offsetTop) {
-  if (this.element) this.element.style.marginTop = Math.floor(offsetTop) + 'px';
+  console.error(this.element, this.height, offsetTop, Math.floor(offsetTop) / this.height * 100 + '%')
+  if (this.element) this.element.style.marginTop = offsetTop / this.column.width * 100 + '%';
   return this.offsetTop = offsetTop;
 }
 Bento.Item.prototype.setContent = function(content) {
@@ -494,8 +495,7 @@ Bento.Item.prototype.setContent = function(content) {
   if (this.span && this.element) {
     if (this.bento.columns.indexOf(this.span[0]) < this.bento.columns.indexOf(this.column)) {
       var margin = this.column.width - this.width - this.bento.gutter;
-      console.error(this.element, margin, this.width, this.column.width)
-      this.element.style.marginLeft = this.column.width / margin * 100 + '%'
+      this.element.style.marginLeft = margin / this.column.width * 100 + '%';
     }
   }  
   if (this.column.element) this.inject();

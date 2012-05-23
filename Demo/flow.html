@@ -12,8 +12,8 @@
       overflow-y: scroll;
     }
     div.bento > ul img{
-      width: 100%;
       display: block;
+      width: 100%;
     }
     h2 { display: none}
     div.bento > ul {
@@ -22,39 +22,21 @@
       padding: 0;
       list-style: none;
       min-height: 1px;
-    }
-    ul > li {
-      -webkit-transition: all 0.5s ease-in-out;
-    	-moz-transition: all 0.5s ease-in-out;
-    	-o-transition: all 0.5s ease-in-out;
-    	-ms-transition: all 0.5s ease-in-out;
-    	transition: all 0.5s ease-in-out;
+      width: 16.6%;
     }
     div.bento > ul > li {
       margin: 0 auto;
+      padding: 5px 0 0 5px;
     }
-    
-    div.bento > ul > li:focus {
-      padding-bottom: 100px;
+    div.bento > ul > li.span {
     }
-    div.bento > ul.a {
-      width: 12.5%;
-    }
-    div.bento > ul.b {
-      width: 12.5%;
-    }
-    div.bento > ul.c {
-      min-width: 1px;
-      width: 12.5%;
-    }
-    div.bento > ul.d {
-      width: 12.5%;
-    }
-    div.bento > ul.e {
-      width: 12.5%;
-    }
-    div.bento > ul.f {
-      width: 12.5%;
+    @media all and (max-width:1000px) {
+      div.bento > ul {
+        width: 20%;
+      }
+      div.bento > ul.f {
+        display: none;
+      }
     }
     footer {
       clear: both;
@@ -103,21 +85,30 @@
         element = document.createElement('li');
         element.setAttribute('itemscope', 'itemscope');
         element.innerHTML = template;
-        element.setAttribute('tabindex', '0')
-      }
+      } else element.removeAttribute('style');
+      
       if (!parent) {
         if (this.width > this.column.width) {
           element.style.width = this.width / this.column.width * 100 + '%';
-        } else delete element.style.width;
-        if (this.column.width != this.width)
-          element.style.maxWidth = this.width + 'px'
-        element.style.minHeight = this.height + 'px';
+          element.className = 'span';
+        } else {
+          delete element.style.width;
+          element.className = '';
+        }
+        if (this.column.width > this.width + 5)
+          element.style.maxWidth = (this.width / this.column.width) + '%'
+        //element.style.minHeight = Math.floor((this.height / this.width) * (this.width - 5)) + 'px';
       }
       var property = element.getAttribute('itemprop');
       if (property) {
         switch (element.tagName) {
           case 'IMG':
-            element.src = content[property];
+            var that = this;
+            //element.height = this.height;
+            //element.width = this.width;
+            element.src = content[property].replace('/x/', function() {
+              return '/' + that.width + 'x' + '/'
+            })
             break;
           default:
             if (element.getAttribute('itemscope') != null) {
@@ -133,14 +124,16 @@
       return element;
     }
     function prepare () {
-      var posts = response.result.posts
-      location.path
-      posts.forEach(function(post, i) {
-        post.width = parseInt(post.leader_image.width)
-        post.height = parseInt(post.leader_image.height)
-        setTimeout(function() {
-          Pipeline.push(post);
-        }, i * parseInt((location.search.match(/delay=(\d+)/i) || [0,0])[1]))
+      var posts = response.result.posts;
+      [0/*, 1, 2*/].forEach(function(j) {
+        
+        posts.forEach(function(post, i) {
+          post.width = parseInt(post.leader_image.width)
+          post.height = parseInt(post.leader_image.height)
+          setTimeout(function() {
+            Pipeline.push(post);
+          }, ((j * posts.length) + i) * parseInt((location.search.match(/delay=(\d+)/i) || [0,0])[1]))
+        })
       })
       return [];
     }
@@ -157,7 +150,7 @@
     Math.seed = (location.search.match(/seed=([^&?]+)/i) || [0, Math.random().toString()])[1]
     Math.seedrandom(Math.seed);
     
-    Pipeline = new Bento(element, columns, prepare, render, patterns);
+    Pipeline = new Bento(element, columns, prepare, render, patterns, window);
     
   </script>
 </body>
