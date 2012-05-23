@@ -30,6 +30,14 @@
     }
     div.bento > ul > li.span {
     }
+    @media all and (max-width:1000px) {
+      div.bento > ul {
+        width: 20%;
+      }
+      div.bento > ul.f {
+        display: none;
+      }
+    }
     footer {
       clear: both;
     }
@@ -77,7 +85,8 @@
         element = document.createElement('li');
         element.setAttribute('itemscope', 'itemscope');
         element.innerHTML = template;
-      }
+      } else element.removeAttribute('style');
+      
       if (!parent) {
         if (this.width > this.column.width) {
           element.style.width = this.width / this.column.width * 100 + '%';
@@ -86,17 +95,17 @@
           delete element.style.width;
           element.className = '';
         }
-        if (this.column.width != this.width)
-          element.style.maxWidth = (this.width) + 'px'
-        element.style.minHeight = Math.floor((this.height / this.width) * (this.width - 10)) + 'px';
+        if (this.column.width > this.width + 5)
+          element.style.maxWidth = (this.width / this.column.width) + '%'
+        //element.style.minHeight = Math.floor((this.height / this.width) * (this.width - 5)) + 'px';
       }
       var property = element.getAttribute('itemprop');
       if (property) {
         switch (element.tagName) {
           case 'IMG':
             var that = this;
-            element.height = this.height;
-            element.width = this.width;
+            //element.height = this.height;
+            //element.width = this.width;
             element.src = content[property].replace('/x/', function() {
               return '/' + that.width + 'x' + '/'
             })
@@ -141,7 +150,7 @@
     Math.seed = (location.search.match(/seed=([^&?]+)/i) || [0, Math.random().toString()])[1]
     Math.seedrandom(Math.seed);
     
-    Pipeline = new Bento(element, columns, prepare, render, patterns/*, window*/);
+    Pipeline = new Bento(element, columns, prepare, render, patterns, window);
     
   </script>
 </body>
