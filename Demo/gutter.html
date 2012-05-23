@@ -111,7 +111,7 @@
         }
         if (this.column.width != this.width)
           element.style.maxWidth = this.width + 'px'
-        element.style.minHeight = (this.height / this.width) * (this.width - 10) + 'px';
+        element.style.minHeight = Math.floor((this.height / this.width) * (this.width - 10)) + 'px';
       }
       var property = element.getAttribute('itemprop');
       if (property) {
