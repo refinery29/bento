@@ -3,6 +3,10 @@ Bento
 
 Bento is a library to pack and reorder content between multiple liquid columns. 
 
+Demo
+----
+http://refinery29.github.com/bento/Demo/index.html?delay=50
+
 Reasoning
 ---------
 
@@ -20,3 +24,19 @@ You'll need to update submodules to fetch jasmine
 And then
 
     open Specs/index.html
+    
+    
+Upcoming features
+-----------------
+
+1) Whitespace gutter
+2) Image chrome - header, date, tag
+3) Request image of the right size
+
+4) Filling holes with multiple images
+5) Reflow content on window resize
+
+6) Better scrolling handling
+7) Endless grid that reuses elements
+
+8) Inline galleries

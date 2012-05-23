@@ -39,7 +39,10 @@ var Bento = function() {
         }
         break;
       case 'function':
-        if (!request) 
+        if (arg.item) {
+          if (!columns) columns = this.setColumns(arg);
+          else this.concat(arg)
+        } else if (!request) 
           var request = this.request = arg;
         else
           this.renderer = arg;
