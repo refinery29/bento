@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<head>
+  <script src="../Source/Bento.js"></script>
+  <script src="posts.json"></script>
+  <title>Bento</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      overflow-y: scroll;
+    }
+    div.bento > ul img{
+      width: 100%;
+      display: block;
+    }
+    h2 { display: none}
+    div.bento > ul {
+      float: left;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      min-height: 1px;
+    }
+    ul > li {
+      -webkit-transition: all 0.5s ease-in-out;
+    	-moz-transition: all 0.5s ease-in-out;
+    	-o-transition: all 0.5s ease-in-out;
+    	-ms-transition: all 0.5s ease-in-out;
+    	transition: all 0.5s ease-in-out;
+    }
+    div.bento > ul > li {
+      margin: 0 auto;
+    }
+    
+    div.bento > ul > li:focus {
+      padding-bottom: 100px;
+    }
+    div.bento > ul.a {
+      width: 12.5%;
+    }
+    div.bento > ul.b {
+      width: 12.5%;
+    }
+    div.bento > ul.c {
+      min-width: 1px;
+      width: 12.5%;
+    }
+    div.bento > ul.d {
+      width: 12.5%;
+    }
+    div.bento > ul.e {
+      width: 12.5%;
+    }
+    div.bento > ul.f {
+      width: 12.5%;
+    }
+    footer {
+      clear: both;
+    }
+  </style>
+</head>
+<body>
+  <div class="bento">
+    <ul class="a"></ul>
+    <ul class="b"></ul>
+    <ul class="c"></ul>
+    <ul class="d"></ul>
+    <ul class="e"></ul>
+    <ul class="f"></ul>
+    <footer></footer>
+  </div>
+  <script type="template" id="post">
+    <h2 itemprop="title"></h2>
+    <section itemscope itemprop="leader_image">
+      <img itemprop="src">
+    </section>
+  </script>
+  
+  <script>
+    var patterns = {
+      '100_percent_chance_to_make_wide_pictures_span_for_2_columns': {
+        ratio: [1.5, 3],
+        span: 2
+      },
+      '50_percent_to_make_wide_pictures_span_for_3_columns': {
+        ratio: [1.5, 3],
+        span: 3,
+        probability: 0.50
+      },
+      '25_percent_to_make_narrow_pictures_span_for_2_columns': {
+        ratio: [0.6, 1],
+        span: 2,
+        probability: 0.25
+      }
+    }
+    var element = document.getElementsByClassName('bento')[0];
+    var columns = element.getElementsByTagName('ul');
+    var template = document.getElementById('post').textContent;
+    function render (content, element, parent) {
+      if (!element) {
+        element = document.createElement('li');
+        element.setAttribute('itemscope', 'itemscope');
+        element.innerHTML = template;
+        element.setAttribute('tabindex', '0')
+      }
+      if (!parent) {
+        if (this.width > this.column.width) {
+          element.style.width = this.width / this.column.width * 100 + '%';
+        } else delete element.style.width;
+        if (this.column.width != this.width)
+          element.style.maxWidth = this.width + 'px'
+        element.style.minHeight = this.height + 'px';
+      }
+      var property = element.getAttribute('itemprop');
+      if (property) {
+        switch (element.tagName) {
+          case 'IMG':
+            element.src = content[property];
+            break;
+          default:
+            if (element.getAttribute('itemscope') != null) {
+              parent = content;
+              if (!(content = content[property])) return;
+            } else {
+              element.innerHTML = content[property];
+            }
+        }
+      }
+      for (var i = 0, child; child = element.childNodes[i++];) 
+        if (child.nodeType == 1) render.call(this, content, child, parent || true)
+      return element;
+    }
+    function prepare () {
+      var posts = response.result.posts
+      location.path
+      posts.forEach(function(post, i) {
+        post.width = parseInt(post.leader_image.width)
+        post.height = parseInt(post.leader_image.height)
+        setTimeout(function() {
+          Pipeline.push(post);
+        }, i * parseInt((location.search.match(/delay=(\d+)/i) || [0,0])[1]))
+      })
+      return [];
+    }
+    
+    
+
+    /* 
+      Seeded random number generator
+      http://davidbau.com/archives/2010/01/30/random_seeds_coded_hints_and_quintillions.html#more
+      
+      Used to reproduce bugs in layouts
+    */
+    (function(j,i,g,m,k,n,o){function q(b){var e,f,a=this,c=b.length,d=0,h=a.i=a.j=a.m=0;a.S=[];a.c=[];for(c||(b=[c++]);d<g;)a.S[d]=d++;for(d=0;d<g;d++)e=a.S[d],h=h+e+b[d%c]&g-1,f=a.S[h],a.S[d]=f,a.S[h]=e;a.g=function(b){var c=a.S,d=a.i+1&g-1,e=c[d],f=a.j+e&g-1,h=c[f];c[d]=h;c[f]=e;for(var i=c[e+h&g-1];--b;)d=d+1&g-1,e=c[d],f=f+e&g-1,h=c[f],c[d]=h,c[f]=e,i=i*g+c[e+h&g-1];a.i=d;a.j=f;return i};a.g(g)}function p(b,e,f,a,c){f=[];c=typeof b;if(e&&c=="object")for(a in b)if(a.indexOf("S")<5)try{f.push(p(b[a],e-1))}catch(d){}return f.length?f:b+(c!="string"?"\0":"")}function l(b,e,f,a){b+="";for(a=f=0;a<b.length;a++){var c=e,d=a&g-1,h=(f^=e[a&g-1]*19)+b.charCodeAt(a);c[d]=h&g-1}b="";for(a in e)b+=String.fromCharCode(e[a]);return b}i.seedrandom=function(b,e){var f=[],a;b=l(p(e?[b,j]:arguments.length?b:[(new Date).getTime(),j,window],3),f);a=new q(f);l(a.S,j);i.random=function(){for(var c=a.g(m),d=o,b=0;c<k;)c=(c+b)*g,d*=g,b=a.g(1);for(;c>=n;)c/=2,d/=2,b>>>=1;return(c+b)/d};return b};o=i.pow(g,m);k=i.pow(2,k);n=k*2;l(i.random(),j)})([],Math,256,6,52);
+    Math.seed = (location.search.match(/seed=([^&?]+)/i) || [0, Math.random().toString()])[1]
+    Math.seedrandom(Math.seed);
+    
+    Pipeline = new Bento(element, columns, prepare, render, patterns);
+    
+  </script>
+</body>
