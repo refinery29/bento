@@ -119,19 +119,19 @@ describe("Bento", function() {
         }, items);
         expect(bento.items[0].column).toBe(bento.columns[0]);
         expect(bento.items[1].column).toBe(bento.columns[1]);
-        expect(bento.items[1].width).toBe(500);
-        expect(bento.items[1].height).toBe(375)
+        expect(bento.items[1].width * bento.items[1].scale).toBe(500);
+        expect(bento.items[1].height * bento.items[1].scale).toBe(375)
         expect(bento.items[2].column).toBe(bento.columns[1]);
-        expect(bento.items[2].width).toBe(300);
-        expect(bento.items[2].height).toBe(450)
+        expect(bento.items[2].width * bento.items[2].scale).toBe(300);
+        expect(bento.items[2].height * bento.items[2].scale).toBe(450)
         expect(bento.items[3].column).toBe(bento.columns[1]);
         expect(bento.items[4].column).toBe(bento.columns[1]);
         expect(bento.items[5].column).toBe(bento.columns[2]);
-        expect(bento.items[5].width).toBe(200)
-        expect(bento.items[5].height).toBe(400)
+        expect(bento.items[5].width * bento.items[5].scale).toBe(200)
+        expect(bento.items[5].height * bento.items[5].scale).toBe(400)
         expect(bento.items[6].column).toBe(bento.columns[0])
-        expect(bento.items[6].height).toBe(400)
-        expect(bento.items[6].width).toBe(200)
+        expect(bento.items[6].height * bento.items[6].scale).toBe(400)
+        expect(bento.items[6].width * bento.items[6].scale).toBe(200)
         expect(bento.items[7].column).toBe(bento.columns[0])
         expect(bento.columns.map(function(c) {
           return !c.holes || !c.holes.length
@@ -158,8 +158,8 @@ describe("Bento", function() {
         expect(bento.items[3].column).toBe(bento.columns[1])
         expect(bento.items[4].column).toBe(bento.columns[0])
         expect(bento.items[5].column).toBe(bento.columns[0])
-        expect(bento.items[4].height).toBe(100)
-        expect(bento.items[4].width).toBe(83)
+        expect(Math.floor(bento.items[4].height * bento.items[4].scale)).toBe(100)
+        expect(Math.floor(bento.items[4].width * bento.items[4].scale)).toBe(83)
         expect(bento.columns.map(function(c) {
           return c.height
         })).toEqual([400, 400, 400])

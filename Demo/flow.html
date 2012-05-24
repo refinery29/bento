@@ -181,7 +181,7 @@
     Math.seed = (location.search.match(/seed=([^&?]+)/i) || [0, Math.random().toString()])[1]
     Math.seedrandom(Math.seed);
     
-    Pipeline = new Bento(element, columns, prepare, render, patterns, window);
+    Pipeline = new Bento(5, element, columns, prepare, render, patterns, window);
     
   </script>
 </body>
