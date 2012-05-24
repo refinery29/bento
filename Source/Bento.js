@@ -82,7 +82,6 @@ Bento.prototype.setColumns = function(settings) {
     }
   if (!diff) return;
   for (var i = 0, column; column = this.allColumns[i]; i++) {
-    
     for (var j = 0, item; item = column.items[j]; j++)
       item.reset();
     if (column.element) while (column.element.lastChild)
@@ -136,7 +135,6 @@ Bento.prototype.setHeight = function(height) {
 };
 Bento.prototype.setWidth = function(width) {
   if (width.nodeType) width = width.offsetWidth || parseInt(width.style.width || 0)
-  if (!isFinite(width)) debugger
   return this.width = Math.floor(width);
 };
 Bento.prototype.update = function() {
@@ -385,6 +383,7 @@ Bento.Item.prototype.setSize    = Bento.prototype.setSize;
 Bento.Item.prototype.setHeight  = Bento.prototype.setHeight;
 Bento.Item.prototype.setWidth   = Bento.prototype.setWidth;
 Bento.Item.prototype.setElement = Bento.prototype.setElement;
+Bento.Item.prototype.scale      = 1;
 Bento.Item.prototype.update = function() {
   this.setPosition()
 }
@@ -413,7 +412,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   if (position.items.indexOf(this) > -1) return;
   var offsetTop = 0;
   if (hole) {
-    // Fills a hole and updates top offset for the next item
+    // Fill a hole and reduce offset for the next item
     this.hole = hole;
     var ratio = this.width / this.height;
     var width = Math.min(hole[1] * ratio, position.width) - this.bento.gutter;
@@ -425,9 +424,9 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
     if (!previous) {
       offsetTop = hole[0];
     } else if (previous.hole) {
-      offsetTop = hole[0] - previous.hole[0] - previous.height - this.bento.gutter;
+      offsetTop = hole[0] - previous.hole[0] - previous.height * previous.scale - this.bento.gutter;
     } else
-      offsetTop = hole[0] - previous.top - previous.height - this.bento.gutter
+      offsetTop = hole[0] - previous.top - previous.height * previous.scale - this.bento.gutter
     if (next && next.offsetTop) 
       next.setOffsetTop(next.offsetTop - (width / ratio) - offsetTop - this.bento.gutter);
   } else
@@ -437,15 +436,14 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
     if (!hole) 
       offsetTop = subject.whitespace;
     else {
-      if (previous) offsetTop = hole[0] - subject.top - subject.height - this.bento.gutter;
+      if (previous) offsetTop = hole[0] - previous.top - previous.height * previous.scale - this.bento.gutter;
       this.whitespace = subject.whitespace - hole[1] - offsetTop
     }
     delete subject.whitespace;
   }
   // Add top offset to the item if applicable
-  this.top = offsetTop + (previous ? previous.top + previous.height + this.bento.gutter : 0);
+  this.top = offsetTop + (previous ? previous.top + previous.height * previous.scale + this.bento.gutter : 0);
   this.previous = previous;
-  if (offsetTop) this.setOffsetTop(offsetTop);
   
   var bento = this.bento;
   if (bento) 
@@ -461,12 +459,10 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   } else delete this.span;
   
   // Update item dimensions
-  var height = Math.floor((width / this.width) * this.height);
+  this.scale = width / this.width;
+  var height = Math.floor(this.scale * this.height);
   if (hole && hole[1] > height) this.whitespace += hole[1] - height - this.bento.gutter;
-  if (width) {
-    this.setWidth(width);
-    this.setHeight(height)
-  }
+  
   // Register holes created by an multi column spanning item
   if (span && bento) for (var i = 0, j = span.length; i < j; i++) {
     var col = span[i];
@@ -482,6 +478,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   
   // Register item in the column
   this.column = position;
+  if (offsetTop) this.setOffsetTop(offsetTop);
   if (!hole) position.setHeight(position.height + height + this.bento.gutter);
   position.push(this);
   if (this.element && this.content) this.setContent(this.content);
@@ -502,7 +499,7 @@ Bento.Item.prototype.setContent = function(content) {
   if (!this.column) return;
   if (this.span && this.element) {
     if (this.bento.columns.indexOf(this.span[0]) < this.bento.columns.indexOf(this.column)) {
-      var margin = this.column.width - this.width - this.bento.gutter;
+      var margin = this.column.width - this.width * this.scale - this.bento.gutter;
       this.element.style.marginLeft = margin / this.column.width * 100 + '%';
     }
   }  
@@ -521,6 +518,7 @@ Bento.Item.prototype.reset = function() {
   delete this.span;
   delete this.whitespace;
   delete this.offsetTop;
+  delete this.column;
 }
 Bento.Item.prototype.render = function(content, element) {
   if (this.onRender) element = this.onRender(content, element)

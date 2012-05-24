@@ -22,7 +22,7 @@
       padding: 0;
       list-style: none;
       min-height: 1px;
-      width: 16.6%;
+      width: 16.666%;
     }
     div.bento > ul > li {
       margin: 0 auto;
@@ -111,29 +111,30 @@
         element.setAttribute('itemscope', 'itemscope');
         element.innerHTML = template;
       } else element.removeAttribute('style');
-      
+      var width = Math.floor(this.scale * this.width);
+      var height = Math.floor(this.scale * this.height);
       if (!parent) {
-        if (this.width > this.column.width) {
-          element.style.width = this.width / this.column.width * 100 + '%';
+        if (width > this.column.width) {
+          element.style.width = width / this.column.width * 100 + '%';
           element.className = 'span';
         } else {
           delete element.style.width;
           element.className = '';
         }
-        if (this.width / this.column.width > 100) debugger
-        if (this.column.width > this.width + 5)
-          element.style.maxWidth = ((this.width ) / (this.column.width)) * 100 + '%'
+        if (this.column.width > width + 5)
+          element.style.maxWidth = ((width) / (this.column.width)) * 100 + '%'
         //element.style.minHeight = Math.floor((this.height / this.width) * (this.width - 5)) + 'px';
       }
       var property = element.getAttribute('itemprop');
       if (property) {
         switch (element.tagName) {
           case 'IMG':
-            var that = this;
             //element.height = this.height;
             //element.width = this.width;
+            //if (that.lastWidth > that.width) break;
+            //that.lastWidth = that.width;
             element.src = content[property].replace('/x/', function() {
-              return '/' + that.width + 'x' + '/'
+              return '/' + width + 'x' + '/'
             })
             break;
           default:
