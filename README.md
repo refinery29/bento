@@ -24,19 +24,20 @@ You'll need to update submodules to fetch jasmine
 And then
 
     open Specs/index.html
-    
-    
+
+Features
+--------
+1) Liquid columns, supports different column sizes
+2) Hide/show columns on resize with media queries, reflows content    
+3) Fixed whitespace gutter
+4) Request images of the right size
+
 Upcoming features
 -----------------
 
-1) Whitespace gutter
-2) Image chrome - header, date, tag
-3) Request image of the right size
+1) Image chrome - header, date, tag
+2) Filling holes with multiple images
+3) Better scrolling handling
+4) Endless grid that reuses elements
+5) Inline galleries
 
-4) Filling holes with multiple images
-5) Reflow content on window resize
-
-6) Better scrolling handling
-7) Endless grid that reuses elements
-
-8) Inline galleries
