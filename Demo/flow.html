@@ -154,8 +154,10 @@
     }
     function prepare () {
       var posts = response.result.posts;
-      [0/*, 1, 2*/].forEach(function(j) {
-        
+      var times = parseInt((location.search.match(/times=(\d+)/i) || [0,1])[1])
+      var ary = [];
+      for (var i = 0; i < times; i++) ary.push(i);
+      ary.forEach(function(j) {
         posts.forEach(function(post, i) {
           post.width = parseInt(post.leader_image.width)
           post.height = parseInt(post.leader_image.height)
