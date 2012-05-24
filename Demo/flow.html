@@ -106,13 +106,16 @@
     var columns = element.getElementsByTagName('ul');
     var template = document.getElementById('post').textContent;
     function render (content, element, parent) {
+      if (this === Pipeline.items[11] && !parent) debugger
       if (!element) {
         element = document.createElement('li');
         element.setAttribute('itemscope', 'itemscope');
         element.innerHTML = template;
-      } else element.removeAttribute('style');
-      var width = Math.floor(this.scale * this.width);
-      var height = Math.floor(this.scale * this.height);
+      } else {
+        element.removeAttribute('style')
+      }
+      var width = Math.round(this.scale * this.width);
+      var height = Math.round(this.scale * this.height);
       if (!parent) {
         if (width > this.column.width) {
           element.style.width = width / this.column.width * 100 + '%';
@@ -123,16 +126,15 @@
         }
         if (this.column.width > width + 5)
           element.style.maxWidth = ((width) / (this.column.width)) * 100 + '%'
-        //element.style.minHeight = Math.floor((this.height / this.width) * (this.width - 5)) + 'px';
       }
       var property = element.getAttribute('itemprop');
       if (property) {
         switch (element.tagName) {
           case 'IMG':
-            //element.height = this.height;
+            element.style.height = height;
             //element.width = this.width;
-            //if (that.lastWidth > that.width) break;
-            //that.lastWidth = that.width;
+            if (this.lastWidth >= width) break;
+            this.lastWidth = width;
             element.src = content[property].replace('/x/', function() {
               return '/' + width + 'x' + '/'
             })
