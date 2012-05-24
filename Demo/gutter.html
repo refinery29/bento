@@ -85,7 +85,7 @@
         element = document.createElement('li');
         element.setAttribute('itemscope', 'itemscope');
         element.innerHTML = template;
-      } else element.removeAttribute('style');
+      }
       if (!parent) {
         if (this.width > this.column.width) {
           element.style.width = this.width / this.column.width * 100 + '%';
@@ -103,8 +103,8 @@
         switch (element.tagName) {
           case 'IMG':
             var that = this;
-            element.height = this.height;
-            element.width = this.width;
+            //element.height = this.height;
+            //element.width = this.width;
             element.src = content[property].replace('/x/', function() {
               return '/' + that.width + 'x' + '/'
             })

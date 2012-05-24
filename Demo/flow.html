@@ -30,11 +30,36 @@
     }
     div.bento > ul > li.span {
     }
-    @media all and (max-width:1000px) {
+    @media all and (max-width:800px) {
       div.bento > ul {
         width: 20%;
       }
       div.bento > ul.f {
+        display: none;
+      }
+    }
+    @media all and (max-width:600px) {
+      div.bento > ul {
+        width: 25%;
+      }
+      div.bento > ul.f {
+        display: none;
+      }
+      div.bento > ul.e {
+        display: none;
+      }
+    }
+    @media all and (max-width:480px) {
+      div.bento > ul {
+        width: 33%;
+      }
+      div.bento > ul.f {
+        display: none;
+      }
+      div.bento > ul.e {
+        display: none;
+      }
+      div.bento > ul.d {
         display: none;
       }
     }
@@ -95,8 +120,9 @@
           delete element.style.width;
           element.className = '';
         }
+        if (this.width / this.column.width > 100) debugger
         if (this.column.width > this.width + 5)
-          element.style.maxWidth = (this.width / this.column.width) + '%'
+          element.style.maxWidth = ((this.width ) / (this.column.width)) * 100 + '%'
         //element.style.minHeight = Math.floor((this.height / this.width) * (this.width - 5)) + 'px';
       }
       var property = element.getAttribute('itemprop');
