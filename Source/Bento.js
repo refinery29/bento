@@ -156,7 +156,7 @@ Bento.prototype.distanceWeight = 1;
 Bento.prototype.visibilityWeight = 1;
 Bento.prototype.holeFillWeight = 1;
 Bento.prototype.holeDistanceWeight = 1;
-Bento.prototype.holeMaximumRatio = 4;
+Bento.prototype.holeMaximumRatio = 3.5;
 Bento.prototype.getPosition = function(item, prepend, span) {
   if (!this.columns) return;
   var width = item.width
@@ -438,7 +438,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
     delete subject.whitespace;
   }
   // Add top offset to the item if applicable
-  this.top = offsetTop + (previous ? previous.top + previous.height * previous.scale + gutter : 0);
+  this.top = Math.round(offsetTop + (previous ? previous.top + previous.height * previous.scale + gutter : 0));
   this.previous = previous;
   
   var bento = this.bento;
@@ -487,7 +487,8 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   if (this.element && this.content) this.setContent(this.content);
 };
 Bento.Item.prototype.setOffsetTop = function(offsetTop) {
-  if (this.element) this.element.style.marginTop = offsetTop / (this.column.width) * 100 + '%';
+  offsetTop = Math.round(offsetTop)
+  if (this.element) this.element.style.marginTop = offsetTop / this.column.width * 100 + '%';
   return this.offsetTop = offsetTop;
 }
 Bento.Item.prototype.setContent = function(content) {
