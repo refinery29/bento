@@ -148,6 +148,7 @@ describe("Bento", function() {
           expect(bento.items.map(function(item) { 
             return item.offsetTop;
           })).toEqual([0, 0, 0, 200, 0, 0, 0])
+          //expect(bento.items[0].getDependent()).toEqual([bento.items[1], bento.items[3]])
         });
       })
     })
@@ -302,6 +303,38 @@ describe("Bento", function() {
         expect(updated.bento).toBe(bento);
       })
     })
+    describe('#getItemAt', function() {
+      describe('at the top edge of a column', function() {
+        it ('should return that item', function() {
+          var bento = new Bento([100]);
+          bento.push({width: 100, height: 100})
+          expect(bento.columns[0].getItemAt(-1)).toBeUndefined()
+          expect(bento.columns[0].getItemAt(0)).toBe(bento.columns[0].items[0])
+          expect(bento.columns[0].getItemAt(1)).toBe(bento.columns[0].items[0])
+        })
+      })
+      describe('in the middle of a column', function() {
+        it ('should return that item', function() {
+          var bento = new Bento([100]);
+          bento.push({width: 100, height: 100}, {width: 100, height: 200})
+          expect(bento.columns[0].getItemAt(50)).toBe(bento.columns[0].items[0])
+          expect(bento.columns[0].getItemAt(99)).toBe(bento.columns[0].items[0])
+          expect(bento.columns[0].getItemAt(100)).toBe(bento.columns[0].items[0])
+          expect(bento.columns[0].getItemAt(101)).toBe(bento.columns[0].items[1])
+          expect(bento.columns[0].getItemAt(150)).toBe(bento.columns[0].items[1])
+        })
+      })
+      describe('at the bottom edge of an item', function() {
+        it ('should return that item', function() {
+          var bento = new Bento([100]);
+          bento.push({width: 100, height: 100}, {width: 100, height: 200})
+          expect(bento.columns[0].getItemAt(250)).toBe(bento.columns[0].items[1])
+          expect(bento.columns[0].getItemAt(299)).toBe(bento.columns[0].items[1])
+          expect(bento.columns[0].getItemAt(300)).toBe(bento.columns[0].items[1])
+          expect(bento.columns[0].getItemAt(301)).toBeUndefined()
+        })
+      })
+    })
   });
   describe('.Item', function() {
     describe('when given an object', function() {
@@ -333,6 +366,45 @@ describe("Bento", function() {
         expect(old).toBe(updated)
         expect(updated.width).toBe(123);
         expect(updated.bento).toBe(bento);
+      })
+    })
+    describe('#getDependent', function() {
+      describe('in a simple layout without spans', function() {
+        it ('should return immediately next element in column', function() {
+          var items = [{width: 100, height: 100}, {width: 100, height: 100}];
+          var bento = new Bento([100], items);
+          expect(bento.items[0].getDependent()).toEqual([bento.items[1]])
+        })
+      })
+      describe('in a layout with an item spanning through 2 columns', function() {
+        it ('should return spanning item', function() {
+          var items = [{width: 100, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}, {rating: 0.6, width: 300, height: 100}, {width: 100, height: 100}, {rating: 0.4, width: 200, height: 100}];
+          var bento = new Bento([100, 100, 100], {
+            'span_popular_images': {
+              rating: [0.01, 0.5],
+              span: 2
+            },
+            'span_very_popular_images': {
+              rating: [0.5, 1],
+              span: 3
+            }
+          }, items);
+          expect(bento.items[0].column).toBe(bento.columns[0]);
+          expect(bento.items[1].column).toBe(bento.columns[1]);
+          expect(bento.items[2].column).toBe(bento.columns[2]);
+          expect(bento.items[3].column).toBe(bento.columns[0]);
+          expect(bento.items[4].column).toBe(bento.columns[0]);
+          expect(bento.items[5].column).toBe(bento.columns[1]);
+          expect(bento.items[0].getDependent()).toEqual([bento.items[3], bento.items[5]])
+          expect(bento.items[1].getDependent()).toEqual([bento.items[3], bento.items[5]])
+          expect(bento.items[2].getDependent()).toEqual([bento.items[3], bento.items[5]])
+        });
+        
+        describe('and there is a cascade spanning item that', function() {
+          it ('should return all spanning items', function() {
+            
+          })
+        })
       })
     })
   });

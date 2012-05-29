@@ -239,8 +239,7 @@ Bento.prototype.getPosition = function(item, prepend, span) {
       var holeFill = width / column.width;
       if (holeFill > 1) holeFill = 1 / holeFill;
       var holeDistance = Math.max(1 - hole[0] / max.height, 0)
-      var holeScore = (holeFill    * holeFillWeight
-                    + holeDistance * holeDistanceWeight) / 2;
+      var holeScore = (holeFill * holeFillWeight + holeDistance * holeDistanceWeight) / 2;
       if (holeScore > bestHoleScore) {
         bestHoleScore = holeScore;
         bestHole = hole;
@@ -335,6 +334,11 @@ Bento.Column.prototype.push = function() {
 };
 Bento.Column.prototype.setBento = function(bento) {
   this.bento = bento;
+};
+Bento.Column.prototype.getItemAt = function(top) {
+  for (var i = 0, item; item = this.items[i++];)
+    if (item.top <= top && top <= item.top + item.height)
+      return item;
 };
 /*
   Bento item is a wrapper over a content object. It knows its
@@ -485,6 +489,47 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   if (!hole) position.setHeight(position.height + height + gutter);
   position.push(this);
   if (this.element && this.content) this.setContent(this.content);
+};
+Bento.Item.prototype.getDependent = function(height, column, top, result) {
+  var bento = this.bento;
+  if (typeof column == 'number') {
+    var span = column;
+    column = null;
+  }
+  if (column == null) column = this.column;
+  if (height == null) height = this.height;
+  if (top == null)    top = this.top;
+  if (result == null) {
+    var clean = true;
+    result = [];
+  }
+  var index = bento.columns.indexOf(column);
+  if (span) {
+    if (index + span > bento.columns.length)
+      index = bento.columns.length - span;
+    for (var i = index, col; col = bento.columns[i]; i++)
+      this.getDependent(top, col, height, result);
+  } else {
+    for (var i = 0, col; col = bento.columns[i]; i++) {
+      for (var j = 0, item; item = col.items[j]; j++) {
+        if (item.top <= this.top || item === this) continue;
+        if (col == column && !result[index]) result[index] = item;
+        if (item.span && !result[i]) {
+          if (item.span.indexOf(column) > -1)
+            result[i] = item;
+          for (var k = 0, span; span = item.span[k]; k++) {
+            this.getDependent(item.top, span, item.height, result);
+          }
+        }
+      }
+    }
+  }
+  if (clean) 
+    return result.filter(function(item) {
+      return item;
+    });
+  else
+    return result
 };
 Bento.Item.prototype.setOffsetTop = function(offsetTop) {
   offsetTop = Math.round(offsetTop)

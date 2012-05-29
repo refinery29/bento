@@ -14,6 +14,11 @@
     div.bento > ul img{
       display: block;
       width: 100%;
+      -webkit-transition: padding-top 1s ease-in-out;
+    	-moz-transition: padding-top 1s ease-in-out;
+    	-o-transition: padding-top 1s ease-in-out;
+    	-ms-transition: padding-top 1s ease-in-out;
+    	transition: padding-top 1s ease-in-out;
     }
     h2 { display: none}
     div.bento > ul {
@@ -87,17 +92,18 @@
   
   <script>
     var patterns = {
-      '100_percent_chance_to_make_wide_pictures_span_for_2_columns': {
-        ratio: [1.5, 3],
-        span: 2
+      '50_percent_chance_to_make_popular_pictures_span_for_2_columns': {
+        ratio: [0.6, 1],
+        span: 2,
+        probability: 0.40
       },
-      '50_percent_to_make_wide_pictures_span_for_3_columns': {
-        ratio: [1.5, 3],
+      '50_percent_to_make_very_popular_pictures_span_for_3_columns': {
+        ratio: [0.8, 1],
         span: 3,
         probability: 0.50
       },
-      '25_percent_to_make_narrow_pictures_span_for_2_columns': {
-        ratio: [0.6, 1],
+      '25_percent_to_mildly_popular_pictures_span_for_2_columns': {
+        rating: [0.4, 0.6],
         span: 2,
         probability: 0.25
       }
@@ -123,8 +129,9 @@
           delete element.style.width;
           element.className = '';
         }
-        if (this.column.width > width + 5)
-          element.style.maxWidth = ((width) / (this.column.width)) * 100 + '%'
+        if (this.column.width > width + 5) {
+          element.style.maxWidth = ((width) / (this.column.width)) * 100 + '%';
+        }
       }
       var property = element.getAttribute('itemprop');
       if (property) {
@@ -133,6 +140,7 @@
             if (this.lastWidth >= width) break;
             element.style.height = height + 'px';
             this.lastWidth = width;
+            element.index = this.bento.items.length;
             element.onload = function() {
               element.onload = null;
               element.style.height = 'auto';
@@ -163,6 +171,7 @@
         posts.forEach(function(post, i) {
           post.width = parseInt(post.leader_image.width)
           post.height = parseInt(post.leader_image.height)
+          post.rating = parseFloat(post.social_score_percentile);
           setTimeout(function() {
             Pipeline.push(post);
           }, ((j * posts.length) + i) * parseInt((location.search.match(/delay=(\d+)/i) || [0,0])[1]))
@@ -170,6 +179,21 @@
       })
       return [];
     }
+    
+    var focused
+    document.body.onclick = function(e) {
+      return
+      var target = e.target;
+      if (target && target.tagName == 'IMG') {
+        var item = Pipeline.items[target.index];
+        if (focused) for (var i = 0, other; other = focused[i++];)
+          other.element.style.paddingTop = '0px';
+        debugger
+        focused = item.getDependent();
+        for (var i = 0, other; other = focused[i++];)
+          other.element.style.paddingTop = '200px';
+      }
+    };
     
     
 

@@ -31,13 +31,13 @@ Features
 2) Hide/show columns on resize with media queries, reflows content    
 3) Fixed whitespace gutter
 4) Request images of the right size
+5) Filling holes with multiple images
 
 Upcoming features
 -----------------
 
 1) Image chrome - header, date, tag
-2) Filling holes with multiple images
-3) Better scrolling handling
-4) Endless grid that reuses elements
-5) Inline galleries
+2) Better scrolling handling
+3) Endless grid that reuses elements
+4) Inline galleries
 
