@@ -106,6 +106,51 @@ describe("Bento", function() {
         })
       })
     });
+    describe('when a composition creates long holes that a single image cant fill', function() {
+      it ('should fill hole with multiple images', function() {
+        var items = [{width: 200, height: 800}, {rating: 0.9, width: 400, height: 200}, {width: 200, height: 200}, {width: 200, height: 200}, {width: 200, height: 200}, {width: 200, height: 200}]
+        var bento = new Bento([200, 200], {
+          'span_popular_images': {
+            rating: [0.5, 1],
+            span: 2
+          }
+        }, items);
+        expect(bento.columns[0].height).toBe(1000);
+        expect(bento.columns[1].height).toBe(1000);
+        expect(bento.items[0].column).toBe(bento.columns[0]);
+        expect(bento.items[1].column).toBe(bento.columns[0]);
+        expect(bento.items[2].column).toBe(bento.columns[1]);
+        expect(bento.items[3].column).toBe(bento.columns[1]);
+        expect(bento.items[4].column).toBe(bento.columns[1]);
+        expect(bento.items[5].column).toBe(bento.columns[1]);
+        expect(bento.items.map(function(item) { 
+          return item.offsetTop;
+        })).toEqual([0, 0, 0, 0, 0, 0])
+      })
+      describe('and a hole is after another image that spans', function() {
+        it ('should fill hole with multiple images', function() {
+          var items = [{rating: 0.9, width: 400, height: 200}, {width: 200, height: 800}, {rating: 0.9, width: 400, height: 200}, {width: 200, height: 200}, {width: 200, height: 200}, {width: 200, height: 200}, {width: 200, height: 200}]
+          var bento = new Bento([200, 200], {
+            'span_popular_images': {
+              rating: [0.5, 1],
+              span: 2
+            }
+          }, items);
+          expect(bento.columns[0].height).toBe(1200);
+          expect(bento.columns[1].height).toBe(1200);
+          expect(bento.items[0].column).toBe(bento.columns[0]);
+          expect(bento.items[1].column).toBe(bento.columns[0]);
+          expect(bento.items[2].column).toBe(bento.columns[0]);
+          expect(bento.items[3].column).toBe(bento.columns[1]);
+          expect(bento.items[4].column).toBe(bento.columns[1]);
+          expect(bento.items[5].column).toBe(bento.columns[1]);
+          expect(bento.items[6].column).toBe(bento.columns[1]);
+          expect(bento.items.map(function(item) { 
+            return item.offsetTop;
+          })).toEqual([0, 0, 0, 200, 0, 0, 0])
+        });
+      })
+    })
     describe('when item is set to span between multiple columns', function() {
       it ('should take space in both columns and fill holes', function() {
         var items = [{width: 200, height: 750},  {width: 1024, height: 768}, {width: 200, height: 300}, 

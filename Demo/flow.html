@@ -106,7 +106,6 @@
     var columns = element.getElementsByTagName('ul');
     var template = document.getElementById('post').textContent;
     function render (content, element, parent) {
-      if (this === Pipeline.items[11] && !parent) debugger
       if (!element) {
         element = document.createElement('li');
         element.setAttribute('itemscope', 'itemscope');
@@ -131,10 +130,13 @@
       if (property) {
         switch (element.tagName) {
           case 'IMG':
-            element.style.height = height;
-            //element.width = this.width;
             if (this.lastWidth >= width) break;
+            element.style.height = height + 'px';
             this.lastWidth = width;
+            element.onload = function() {
+              element.onload = null;
+              element.style.height = 'auto';
+            }
             element.src = content[property].replace('/x/', function() {
               return '/' + width + 'x' + '/'
             })

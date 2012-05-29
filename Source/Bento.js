@@ -155,25 +155,24 @@ Bento.prototype.ratingWeight = 1;
 Bento.prototype.distanceWeight = 1;
 Bento.prototype.visibilityWeight = 1;
 Bento.prototype.holeFillWeight = 1;
-Bento.prototype.holeDistanceWeight = 0.75;
-Bento.prototype.holeFillThreshold = 0.25;
+Bento.prototype.holeDistanceWeight = 1;
+Bento.prototype.holeMaximumRatio = 4;
 Bento.prototype.getPosition = function(item, prepend, span) {
   if (!this.columns) return;
   var width = item.width
   var height = item.height
   var ratio = width / height;
-  var rating = 1 - (item.rating || 0);
+  var rating = item.rating || 0;
   var bento = item.bento;
   var ratingWeight = this.ratingWeight;
   var visibilityWeight = this.visibilityWeight;
   var distanceWeight = this.distanceWeight;
   var holeFillWeight = this.holeFillWeight;
-  var holeFixWeight = this.holeFixWeight;
   var holeDistanceWeight = this.holeDistanceWeight;
-  var holeFillThreshold = this.holeFillThreshold;
   var size = 0;
   if (span == null) span = 1;
-  if (item.seed == null) item.seed = Math.random()
+  if (item.seed == null) item.seed = Math.random();
+  
   // Check against all registered patterns and collect modifiers
   if (this.patterns) for (var property in this.patterns) {
     var pattern = this.patterns[property];
@@ -193,6 +192,8 @@ Bento.prototype.getPosition = function(item, prepend, span) {
           distanceWeight = pattern.distanceWeight;
         if (pattern.holeFillWeight != null)
           holeFillWeight = pattern.holeFillWeight;
+        if (pattern.holeDistanceWeight != null)
+          holeDistanceWeight = pattern.holeDistanceWeight;
       }
     }
   }
@@ -235,14 +236,10 @@ Bento.prototype.getPosition = function(item, prepend, span) {
     // Find out hole that an item may fill
     if (column.holes) for (var l = 0, hole, bestHole; hole = column.holes[l++];) {
       var width = hole[1] * ratio;
-      var holeFill = width / column.width
-      if (holeFill > 1) {
-        if (holeFill - 1 > holeFillThreshold) continue;
-      } else {
-        if (holeFill < holeFillThreshold) continue;
-      }
+      var holeFill = width / column.width;
+      if (holeFill > 1) holeFill = 1 / holeFill;
       var holeDistance = Math.max(1 - hole[0] / max.height, 0)
-      var holeScore = (holeFill * holeFillWeight
+      var holeScore = (holeFill    * holeFillWeight
                     + holeDistance * holeDistanceWeight) / 2;
       if (holeScore > bestHoleScore) {
         bestHoleScore = holeScore;
@@ -269,16 +266,15 @@ Bento.prototype.getPosition = function(item, prepend, span) {
   }
   
   // Fill a hole, if it's score higher than the best column score
-  if (span == 1 && bestHoleScore > score)
+  if (span == 1 && bestHoleScore >= score)
     return bestHole;
 
   // Collect columns affected by spanning
   if (span > 1 && match) {
     var matches = [match];
     if (direction) {
-      for (var j = this.columns.indexOf(match) + 1, k = j + Math.ceil(span) - 1; j < k; j++) {
+      for (var j = this.columns.indexOf(match) + 1, k = j + Math.ceil(span) - 1; j < k; j++)
         matches.push(this.columns[j])
-      }
     } else {
       for (var j = this.columns.indexOf(match) - 1, k = j - Math.ceil(span) + 1; j > k; j--) 
         matches.push(this.columns[j])
@@ -335,7 +331,6 @@ Bento.Column.prototype.push = function() {
       if (other.top > item.top) break;
     this.items.splice(k, 0, item);
     item.setPosition(this)
-    if (item.column.items.indexOf(item) == -1) debugger
   }
 };
 Bento.Column.prototype.setBento = function(bento) {
@@ -417,7 +412,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
     this.hole = hole;
     var ratio = this.width / this.height;
     var width = Math.min((hole[1] - gutter) * ratio, position.width - gutter);
-    position.holes.splice(position.holes.indexOf(hole), 1);
+    var height = width / ratio;
     for (var i = 0, previous, next, other; other = position.items[i++];)
       if (other.top < hole[0] && (!previous || previous.top < other.top))
         previous = other;
@@ -429,7 +424,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
     } else
       offsetTop = hole[0] - previous.top - previous.height * previous.scale - gutter
     if (next && next.offsetTop) 
-      next.setOffsetTop(next.offsetTop - (width / ratio) - offsetTop - gutter);
+      next.setOffsetTop(next.offsetTop - height - offsetTop - gutter);
   } else
     previous = position.items[position.items.length - 1];
   var subject = previous || position;
@@ -464,19 +459,26 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   var height = Math.round(this.scale * this.height);
   if (hole && hole[1] > height) this.whitespace += hole[1] - height - gutter;
   
+  // Update filled hole
+  if (hole) if ((position.width / (hole[1] - height)) >= this.bento.holeMaximumRatio) {
+    position.holes.splice(position.holes.indexOf(hole), 1);
+  } else {
+    position.holes.splice(position.holes.indexOf(hole), 1, [hole[0] + height + gutter, hole[1] - height - gutter, position]);
+  }
   // Register holes created by an multi column spanning item
   if (span && bento) for (var i = 0, j = span.length; i < j; i++) {
     var col = span[i];
     var holes = col.holes;
     if (!holes) holes = col.holes = [];
     var subject = col.items[col.items.length - 1] || col;
-    if (position.height + height >= col.height)
+    if (position.height + height >= col.height) {
       subject.whitespace = (subject.whitespace || 0) + (position.height + height - col.height) + gutter;
-    if (position.height > col.height)
-      holes.push([col.height, position.height - (col.height), col]);
+    }
+    var holeHeight = position.height - col.height;
+    if (holeHeight && col.width / holeHeight <= bento.holeMaximumRatio) 
+      holes.push([col.height, holeHeight, col]);
     col.setHeight(position.height + height + gutter)
   }
-  
   // Register item in the column
   this.column = position;
   this.setOffsetTop(offsetTop);
@@ -490,6 +492,7 @@ Bento.Item.prototype.setOffsetTop = function(offsetTop) {
 }
 Bento.Item.prototype.setContent = function(content) {
   if (content != this.content) {
+    if (content.rating) this.rating = content.rating;
     if (content.scale) this.setScale(content.scale)
     if (content.width != null) {
       this.setSize(content.width, content.height);
