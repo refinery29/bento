@@ -50,6 +50,8 @@
     	transition: all 0.3s;
     }
     div.bento > ul > li.span {
+      position: relative;
+      z-index: 5;
     }
     @media all and (max-width:800px) {
       div.bento > ul {
@@ -148,10 +150,10 @@
         element.index = this.bento.items.length;
         if (width > this.column.width) {
           element.style.width = width / this.column.width * 100 + '%';
-          element.className = 'span';
+          element.className = (element.className || '') + ' span';
         } else {
           delete element.style.width;
-          element.className = '';
+          element.className = element.className.replace(' span', '');
         }
         if (this.column.width > width + 5) {
           element.style.maxWidth = ((width) / (this.column.width)) * 100 + '%';
@@ -216,10 +218,11 @@
       for (var li = e.target; li && li.tagName != 'LI';) li = li.parentNode;
       if (shifted) for (var i = 0, other; other = shifted[i++];)
         other.element.style.paddingTop = '5px';
-      if (focused) focused.element.className = '';
+      if (focused)   
+        focused.element.className = focused.element.className.replace(' focused', '');
       if (!li) return;
       focused = Pipeline.items[li.index];
-      li.className = 'focused';
+      li.className = (li.className || '') + ' focused';
       shifted = focused.getDependent().filter(function(i) {
         return i.column != focused.column;
       });
