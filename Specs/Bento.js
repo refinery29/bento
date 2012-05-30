@@ -376,9 +376,11 @@ describe("Bento", function() {
           expect(bento.items[0].getDependent()).toEqual([bento.items[1]])
         })
       })
-      describe('in a layout with an item spanning through 2 columns', function() {
+      describe('in a layout with an item spanning through multiple columns', function() {
         it ('should return spanning item', function() {
-          var items = [{width: 100, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}, {rating: 0.6, width: 300, height: 100}, {width: 100, height: 100}, {rating: 0.4, width: 200, height: 100}];
+          var items = [{width: 100, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}, 
+                       {rating: 0.6, width: 300, height: 100                                         }, 
+                       {width: 100, height: 100}, {rating: 0.4, width: 200, height: 100              }];
           var bento = new Bento([100, 100, 100], {
             'span_popular_images': {
               rating: [0.01, 0.5],
@@ -397,7 +399,10 @@ describe("Bento", function() {
         });
         
         it ('should return items after spanning item', function() {
-          var items = [{width: 100, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}, {width: 200, height: 100, rating: 0.25}, {width: 100, height: 100}, {width: 100, height: 100}];
+          var items = [{width: 100, height: 100}, {width: 100, height: 100}, 
+                       {width: 100, height: 100}, {width: 100, height: 100}, 
+                       {width: 200, height: 100, rating: 0.25             }, 
+                       {width: 100, height: 100}, {width: 100, height: 100}];
           var bento = new Bento([100, 100], {
             'span_popular_images': {
               rating: [0.01, 1],
@@ -411,6 +416,74 @@ describe("Bento", function() {
           expect(bento.items[4].getDependent()).toEqual([bento.items[5], bento.items[6]])
           expect(bento.items[5].getDependent()).toEqual([])
           expect(bento.items[6].getDependent()).toEqual([])
+        })
+        
+        it ('should return items after multiple spanning items', function() {
+          var items = [{rating: 0.4, width: 200, height: 200              }, {width: 100, height: 100}, 
+                                                                             {width: 100, height: 100}, 
+                       {rating: 0.6, width: 300, height: 100                                         }, 
+                       {width: 100, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}];
+          var bento = new Bento([100, 100, 100], {
+            'span_popular_images': {
+              rating: [0.01, 0.5],
+              span: 2
+            },
+            'span_very_popular_images': {
+              rating: [0.5, 1],
+              span: 3
+            }
+          }, items);
+          expect(bento.items[0].getDependent()).toEqual([bento.items[3], bento.items[5], bento.items[6]])
+          expect(bento.items[1].getDependent()).toEqual([bento.items[3], bento.items[5], bento.items[2]])
+          expect(bento.items[2].getDependent()).toEqual([bento.items[3], bento.items[5], bento.items[6]])
+          expect(bento.items[3].getDependent()).toEqual([bento.items[4], bento.items[5], bento.items[6]])
+          expect(bento.items[4].getDependent()).toEqual([])
+          expect(bento.items[5].getDependent()).toEqual([])
+          expect(bento.items[6].getDependent()).toEqual([])
+        })
+        
+        it ('should return items after multiple spanning items in a reverse setup', function() {
+          var items = [{width: 100, height: 100}, {rating: 0.4, width: 200, height: 200              },
+                       {width: 100, height: 100}, 
+                       {rating: 0.6, width: 300, height: 100                                         }, 
+                       {width: 100, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}];
+          var bento = new Bento([100, 100, 100], {
+            'span_popular_images': {
+              rating: [0.01, 0.5],
+              span: 2
+            },
+            'span_very_popular_images': {
+              rating: [0.5, 1],
+              span: 3
+            }
+          }, items);
+          expect(bento.items[0].getDependent()).toEqual([bento.items[2], bento.items[5], bento.items[6]])
+          expect(bento.items[1].getDependent()).toEqual([bento.items[3], bento.items[5], bento.items[6]])
+          expect(bento.items[2].getDependent()).toEqual([bento.items[3], bento.items[5], bento.items[6]])
+          expect(bento.items[3].getDependent()).toEqual([bento.items[4], bento.items[5], bento.items[6]])
+          expect(bento.items[4].getDependent()).toEqual([])
+          expect(bento.items[5].getDependent()).toEqual([])
+          expect(bento.items[6].getDependent()).toEqual([])
+        })
+        
+        it ('should return items after multiple spanning items in a cascade setup', function() {
+          var items = [{width: 100, height: 100}, {rating: 0.4, width: 200, height: 100              },
+                       {rating: 0.4, width: 200, height: 100              }, {width: 100, height: 100}, 
+                       {width: 100, height: 100}, {rating: 0.4, width: 200, height: 100              },
+                       {rating: 0.4, width: 200, height: 100              }, {width: 100, height: 100},
+                       {width: 100, height: 100}, {rating: 0.4, width: 200, height: 100              },
+                       {rating: 0.4, width: 200, height: 100              }, {width: 100, height: 100}];
+          var bento = new Bento([100, 100, 100], {
+            'span_popular_images': {
+              rating: [0.01, 0.5],
+              span: 2
+            }
+          }, items);
+          var indexer = function(i) { 
+            return bento.items.indexOf(i);
+          }
+          expect(bento.items[0].getDependent().map(indexer)).toEqual([2, 5, 7])
+          expect(bento.items[1].getDependent().map(indexer)).toEqual([2, 5, 3])
         })
       })
     })

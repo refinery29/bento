@@ -488,7 +488,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   position.push(this);
   if (this.element && this.content) this.setContent(this.content);
 };
-Bento.Item.prototype.getDependent = function(height, column, top, result) {
+Bento.Item.prototype.getDependent = function(height, column, top, result, recursive) {
   var bento = this.bento;
   if (typeof column == 'number') {
     var span = column;
@@ -502,10 +502,6 @@ Bento.Item.prototype.getDependent = function(height, column, top, result) {
     result = [];
   }
   var index = bento.columns.indexOf(column);
-  if (this.span) {
-    for (var i = index, col; col = this.span[i]; i++)
-      this.getDependent(top, col, height, result);
-  }
   if (span) {
     if (index + span > bento.columns.length)
       index = bento.columns.length - span;
@@ -515,14 +511,23 @@ Bento.Item.prototype.getDependent = function(height, column, top, result) {
     for (var i = 0, col; col = bento.columns[i]; i++) {
       for (var j = 0, item; item = col.items[j]; j++) {
         if (item.top <= top) continue;
-        var first = (col == column && (!result[i] || result[i].top > item.top))
-        if (item.span) {
-          if (col == column || item.span.indexOf(column) > -1) {
-            if (this != item && !result[i]) result[i] = item;
-            for (var k = 0, span; span = item.span[k]; k++) {
-              if (item != this)
-                item.getDependent(item.top, span, item.height, result);
+        var better = (!result[i] || result[i].top > item.top);
+        var first = ((col == column || (this.span && this.span.indexOf(col) > -1)) && better)
+        if (item.span && !recursive) {
+          if (better) {
+            var intersection = col == column;
+            if (!intersection) {
+              for (var k = 0, other; other = item.span[k]; k++) {
+                if (other == column || (this.span && this.span.indexOf(other) > -1)) {
+                  intersection = true;
+                  break;
+                }
+              }
             }
+            if (intersection) result[i] = item;
+          }
+          for (var k = 0, span; span = item.span[k]; k++) {
+            this.getDependent(item.height, span, item.top, result);
           }
         } else if (first) {
           result[i] = item;
