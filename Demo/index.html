@@ -159,12 +159,13 @@
       }
       var property = element.getAttribute('itemprop');
       if (property) {
+        var value = content[property]
         switch (element.tagName) {
           case 'A':
-            element.href = content[property];
+            element.href = value;
             break;
           case 'TIME':
-            element.innerHTML = new Date(parseInt(content[property]) * 1000).toDateString();
+            element.innerHTML = new Date(parseInt(value) * 1000).toDateString();
             break;
           case 'IMG':
             if (this.lastWidth >= width) break;
@@ -174,16 +175,18 @@
               element.onload = null;
               element.style.height = 'auto';
             }
-            element.src = content[property].replace('/x/', function() {
+            element.src = value.replace('/x/', function() {
               return '/' + width + 'x' + '/'
             })
+            break;
+          default:
+            if (typeof value != 'object')
+              element.innerHTML = value;
         }
-      }
-      if (element.getAttribute('itemscope') != null) {
-        parent = content;
-        if (!(content = content[property])) return;
-      } else {
-        element.innerHTML = content[property];
+        if (element.getAttribute('itemscope') != null) {
+          parent = content;
+          if (!(content = content[property])) return;
+        }
       }
       for (var i = 0, child; child = element.childNodes[i++];) 
         if (child.nodeType == 1) render.call(this, content, child, parent || true)
