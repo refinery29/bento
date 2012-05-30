@@ -496,6 +496,32 @@ describe("Bento", function() {
           expect(bento.items[11].getDependent().map(indexer)).toEqual([])
         })
       })
+      
+      it ('should return items after a spanning images side-by-side', function() {
+        var items = [{rating: 0.5, width: 200, height: 250           }, {width: 100, height: 100}, {width: 100, height: 100},
+                                                                        {rating: 0.5, width: 200, height: 100              },
+                                                                        {width: 100, height: 150}, {width: 100, height: 150},
+                     {rating: 0.5, width: 200, height: 100           },
+                     {rating: 0.5, width: 200, height: 100           },
+                     {rating: 0.5, width: 200, height: 100           }
+                    ];
+        var bento = new Bento([100, 100, 100, 100], {
+          'span_popular_images': {
+            rating: [0.01, 0.5],
+            span: 2
+          }
+        }, items);
+        var indexer = function(i) { 
+          return bento.items.indexOf(i);
+        }
+        expect(bento.items[0].getDependent().map(indexer)).toEqual([6])
+        expect(bento.items[1].getDependent().map(indexer)).toEqual([3, 5]);
+        expect(bento.items[2].getDependent().map(indexer)).toEqual([3, 5]);
+        expect(bento.items[3].getDependent().map(indexer)).toEqual([4, 5]);
+        expect(bento.items[4].getDependent().map(indexer)).toEqual([8]);
+        expect(bento.items[5].getDependent().map(indexer)).toEqual([8]);
+        expect(bento.items[6].getDependent().map(indexer)).toEqual([7]);
+      })
     })
   });
 })

@@ -165,6 +165,7 @@
             break;
           case 'TIME':
             element.innerHTML = new Date(parseInt(content[property]) * 1000).toDateString();
+            break;
           case 'IMG':
             if (this.lastWidth >= width) break;
             element.style.height = height + 'px';
@@ -176,15 +177,13 @@
             element.src = content[property].replace('/x/', function() {
               return '/' + width + 'x' + '/'
             })
-            break;
-          default:
-            if (element.getAttribute('itemscope') != null) {
-              parent = content;
-              if (!(content = content[property])) return;
-            } else {
-              element.innerHTML = content[property];
-            }
         }
+      }
+      if (element.getAttribute('itemscope') != null) {
+        parent = content;
+        if (!(content = content[property])) return;
+      } else {
+        element.innerHTML = content[property];
       }
       for (var i = 0, child; child = element.childNodes[i++];) 
         if (child.nodeType == 1) render.call(this, content, child, parent || true)

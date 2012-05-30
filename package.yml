@@ -5,6 +5,6 @@ license: Public domain, http://unlicense.org
 copyright: Yaroslaff Fedin
 author: inviz
 category: Interface
-current: 0.2
+current: 0.3
 sources:
   - Source/Bento.js

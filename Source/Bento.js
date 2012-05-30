@@ -488,7 +488,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   position.push(this);
   if (this.element && this.content) this.setContent(this.content);
 };
-Bento.Item.prototype.getDependent = function(column, top, result, lookup) {
+Bento.Item.prototype.getDependent = function(column, top, result, lookup, intersect) {
   var bento = this.bento;
   if (typeof column == 'number') {
     var span = column;
@@ -514,18 +514,17 @@ Bento.Item.prototype.getDependent = function(column, top, result, lookup) {
         var same = col == column;
         var dependent = (this.span && this.span.indexOf(col) > -1)
         if (item.span) {
-          if (better) {
-            var intersection = same || dependent;
-            if (!intersection) {
-              for (var k = 0, other; other = item.span[k]; k++) {
-                if (other == this.column || other === lookup || (this.span && this.span.indexOf(other) > -1)) {
-                  intersection = true;
-                  break;
-                }
+          var intersection = same || dependent;
+          if (!intersection) {
+            for (var k = 0, other; other = item.span[k]; k++) {
+              if (other == this.column || other === lookup || (this.span && this.span.indexOf(other) > -1)) {
+                intersection = true;
+                break;
               }
             }
-            if (intersection) result[i] = item;
           }
+          if (!intersection) continue;
+          if (better) result[i] = item;
           for (var k = 0, span; span = item.span[k]; k++) {
             this.getDependent(span, item.top, result, col);
           }
