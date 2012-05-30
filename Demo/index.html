@@ -15,7 +15,23 @@
       display: block;
       width: 100%;
     }
-    h2 { display: none}
+    div.bento > ul li h2{
+      padding: 0;
+      margin: 0;
+      font: 1.5em Georgia;
+    }
+    div.bento > ul li .meta { 
+      height: 0;
+      overflow: hidden;
+      -webkit-transition: all 0.3s;
+    	-moz-transition: all 0.3s;
+    	-o-transition: all 0.3s;
+    	-ms-transition: all 0.3s;
+    	transition: all 0.3s;
+    }
+    div.bento > ul li.focused .meta { 
+      height: 200px;
+    }
     div.bento > ul {
       float: left;
       margin: 0;
@@ -27,11 +43,11 @@
     div.bento > ul > li {
       margin: 0 auto;
       padding: 5px 0 0 5px;
-      -webkit-transition: padding-top 0.3s;
-    	-moz-transition: padding-top 0.3s;
-    	-o-transition: padding-top 0.3s;
-    	-ms-transition: padding-top 0.3s;
-    	transition: padding-top 0.3s;
+      -webkit-transition: all 0.3s;
+    	-moz-transition: all 0.3s;
+    	-o-transition: all 0.3s;
+    	-ms-transition: all 0.3s;
+    	transition: all 0.3s;
     }
     div.bento > ul > li.span {
     }
@@ -84,9 +100,16 @@
     <footer></footer>
   </div>
   <script type="template" id="post">
-    <h2 itemprop="title"></h2>
     <section itemscope itemprop="leader_image">
       <img itemprop="src">
+    </section>
+    <section class="meta">
+      <a itemprop="url">
+        <h2 itemprop="title"></h2>
+      </a>
+      <time itemprop="published">
+      
+      </time>
     </section>
   </script>
   
@@ -122,6 +145,7 @@
       var width = Math.round(this.scale * this.width);
       var height = Math.round(this.scale * this.height);
       if (!parent) {
+        element.index = this.bento.items.length;
         if (width > this.column.width) {
           element.style.width = width / this.column.width * 100 + '%';
           element.className = 'span';
@@ -136,11 +160,15 @@
       var property = element.getAttribute('itemprop');
       if (property) {
         switch (element.tagName) {
+          case 'A':
+            element.href = content[property];
+            break;
+          case 'TIME':
+            element.innerHTML = new Date(parseInt(content[property]) * 1000).toDateString();
           case 'IMG':
             if (this.lastWidth >= width) break;
             element.style.height = height + 'px';
             this.lastWidth = width;
-            element.index = this.bento.items.length;
             element.onload = function() {
               element.onload = null;
               element.style.height = 'auto';
@@ -169,6 +197,7 @@
       for (var i = 0; i < times; i++) ary.push(i);
       ary.forEach(function(j) {
         posts.forEach(function(post, i) {
+          console.log(post)
           post.width = parseInt(post.leader_image.width)
           post.height = parseInt(post.leader_image.height)
           post.rating = parseFloat(post.social_score_percentile);
@@ -180,17 +209,20 @@
       return [];
     }
     
-    var focused
+    var shifted, focused
     document.body.onclick = function(e) {
-      var target = e.target;
-      if (target && target.tagName == 'IMG') {
-        var item = Pipeline.items[target.index];
-        if (focused) for (var i = 0, other; other = focused[i++];)
-          other.element.style.paddingTop = '5px';
-        focused = item.getDependent();
-        for (var i = 0, other; other = focused[i++];)
-          other.element.style.paddingTop = '400px';
-      }
+      for (var li = e.target; li && li.tagName != 'LI';) li = li.parentNode;
+      if (shifted) for (var i = 0, other; other = shifted[i++];)
+        other.element.style.paddingTop = '5px';
+      if (focused) focused.element.className = '';
+      if (!li) return;
+      focused = Pipeline.items[li.index];
+      li.className = 'focused';
+      shifted = focused.getDependent().filter(function(i) {
+        return i.column != focused.column;
+      });
+      for (var i = 0, other; other = shifted[i++];)
+        other.element.style.paddingTop = '200px';
     };
     
     
