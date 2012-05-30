@@ -512,10 +512,11 @@ Bento.Item.prototype.getDependent = function(height, column, top, result, recurs
       for (var j = 0, item; item = col.items[j]; j++) {
         if (item.top <= top) continue;
         var better = (!result[i] || result[i].top > item.top);
-        var first = ((col == column || (this.span && this.span.indexOf(col) > -1)) && better)
+        var same = col == column;
+        var dependent = (this.span && this.span.indexOf(col) > -1)
         if (item.span && !recursive) {
           if (better) {
-            var intersection = col == column;
+            var intersection = same;
             if (!intersection) {
               for (var k = 0, other; other = item.span[k]; k++) {
                 if (other == column || (this.span && this.span.indexOf(other) > -1)) {
@@ -529,7 +530,7 @@ Bento.Item.prototype.getDependent = function(height, column, top, result, recurs
           for (var k = 0, span; span = item.span[k]; k++) {
             this.getDependent(item.height, span, item.top, result);
           }
-        } else if (first) {
+        } else if ((same || dependent) && better) {
           result[i] = item;
         }
       }
