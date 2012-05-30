@@ -5,7 +5,7 @@ Bento is a library to pack and reorder content between multiple liquid columns.
 
 Demo
 ----
-http://refinery29.github.com/bento/Demo/flow.html
+http://refinery29.github.com/bento/Demo/index.html
 
 Reasoning
 ---------
