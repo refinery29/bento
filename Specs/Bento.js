@@ -389,21 +389,28 @@ describe("Bento", function() {
               span: 3
             }
           }, items);
-          expect(bento.items[0].column).toBe(bento.columns[0]);
-          expect(bento.items[1].column).toBe(bento.columns[1]);
-          expect(bento.items[2].column).toBe(bento.columns[2]);
-          expect(bento.items[3].column).toBe(bento.columns[0]);
-          expect(bento.items[4].column).toBe(bento.columns[0]);
-          expect(bento.items[5].column).toBe(bento.columns[1]);
           expect(bento.items[0].getDependent()).toEqual([bento.items[3], bento.items[5]])
           expect(bento.items[1].getDependent()).toEqual([bento.items[3], bento.items[5]])
           expect(bento.items[2].getDependent()).toEqual([bento.items[3], bento.items[5]])
+          expect(bento.items[3].getDependent()).toEqual([bento.items[4], bento.items[5]])
+          expect(bento.items[4].getDependent()).toEqual([])
         });
         
-        describe('and there is a cascade spanning item that', function() {
-          it ('should return all spanning items', function() {
-            
-          })
+        it ('should return items after spanning item', function() {
+          var items = [{width: 100, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}, {width: 200, height: 100, rating: 0.25}, {width: 100, height: 100}, {width: 100, height: 100}];
+          var bento = new Bento([100, 100], {
+            'span_popular_images': {
+              rating: [0.01, 1],
+              span: 2
+            }
+          }, items)
+          expect(bento.items[0].getDependent()).toEqual([bento.items[2], bento.items[6]])
+          expect(bento.items[1].getDependent()).toEqual([bento.items[4], bento.items[3]])
+          expect(bento.items[2].getDependent()).toEqual([bento.items[4], bento.items[6]])
+          expect(bento.items[3].getDependent()).toEqual([bento.items[4], bento.items[6]])
+          expect(bento.items[4].getDependent()).toEqual([bento.items[5], bento.items[6]])
+          expect(bento.items[5].getDependent()).toEqual([])
+          expect(bento.items[6].getDependent()).toEqual([])
         })
       })
     })

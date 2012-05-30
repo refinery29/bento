@@ -14,11 +14,6 @@
     div.bento > ul img{
       display: block;
       width: 100%;
-      -webkit-transition: padding-top 1s ease-in-out;
-    	-moz-transition: padding-top 1s ease-in-out;
-    	-o-transition: padding-top 1s ease-in-out;
-    	-ms-transition: padding-top 1s ease-in-out;
-    	transition: padding-top 1s ease-in-out;
     }
     h2 { display: none}
     div.bento > ul {
@@ -32,6 +27,11 @@
     div.bento > ul > li {
       margin: 0 auto;
       padding: 5px 0 0 5px;
+      -webkit-transition: padding-top 0.3s;
+    	-moz-transition: padding-top 0.3s;
+    	-o-transition: padding-top 0.3s;
+    	-ms-transition: padding-top 0.3s;
+    	transition: padding-top 0.3s;
     }
     div.bento > ul > li.span {
     }
@@ -182,13 +182,11 @@
     
     var focused
     document.body.onclick = function(e) {
-      return
       var target = e.target;
       if (target && target.tagName == 'IMG') {
         var item = Pipeline.items[target.index];
         if (focused) for (var i = 0, other; other = focused[i++];)
-          other.element.style.paddingTop = '0px';
-        debugger
+          other.element.style.paddingTop = '5px';
         focused = item.getDependent();
         for (var i = 0, other; other = focused[i++];)
           other.element.style.paddingTop = '200px';

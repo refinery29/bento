@@ -115,8 +115,6 @@ Bento.prototype.setScrollTop = function(top) {
   return this.scrollTop = top;
 };
 Bento.prototype.onResize = function(e) {
-  if (this.resized) return;
-  //this.resized = true;
   this.setHeight(e.target.innerWidth)
   this.setWidth(e.target.innerHeight);
   if (this.columns) this.setColumns();
@@ -504,6 +502,10 @@ Bento.Item.prototype.getDependent = function(height, column, top, result) {
     result = [];
   }
   var index = bento.columns.indexOf(column);
+  if (this.span) {
+    for (var i = index, col; col = this.span[i]; i++)
+      this.getDependent(top, col, height, result);
+  }
   if (span) {
     if (index + span > bento.columns.length)
       index = bento.columns.length - span;
@@ -512,14 +514,18 @@ Bento.Item.prototype.getDependent = function(height, column, top, result) {
   } else {
     for (var i = 0, col; col = bento.columns[i]; i++) {
       for (var j = 0, item; item = col.items[j]; j++) {
-        if (item.top <= this.top || item === this) continue;
-        if (col == column && !result[index]) result[index] = item;
-        if (item.span && !result[i]) {
-          if (item.span.indexOf(column) > -1)
-            result[i] = item;
-          for (var k = 0, span; span = item.span[k]; k++) {
-            this.getDependent(item.top, span, item.height, result);
+        if (item.top <= top) continue;
+        var first = (col == column && (!result[i] || result[i].top > item.top))
+        if (item.span) {
+          if (col == column || item.span.indexOf(column) > -1) {
+            if (this != item && !result[i]) result[i] = item;
+            for (var k = 0, span; span = item.span[k]; k++) {
+              if (item != this)
+                item.getDependent(item.top, span, item.height, result);
+            }
           }
+        } else if (first) {
+          result[i] = item;
         }
       }
     }
