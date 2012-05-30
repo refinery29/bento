@@ -149,7 +149,8 @@
       var width = Math.round(this.scale * this.width);
       var height = Math.round(this.scale * this.height);
       if (!parent) {
-        element.index = this.bento.items.length;
+        element.index = this.bento.items.indexOf(this);
+        if (element.index == -1) element.index = this.bento.items.length;
         if (width > this.column.width) {
           element.style.width = (width + 5) / this.column.width * 100 + '%';
           element.className = (element.className || '') + ' span';
