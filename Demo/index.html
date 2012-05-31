@@ -23,11 +23,11 @@
     div.bento > ul li .meta { 
       height: 0;
       overflow: hidden;
-      -webkit-transition: all 0.3s;
-    	-moz-transition: all 0.3s;
-    	-o-transition: all 0.3s;
-    	-ms-transition: all 0.3s;
-    	transition: all 0.3s;
+      -webkit-transition: all 1s;
+    	-moz-transition: all 1s;
+    	-o-transition: all 1s;
+    	-ms-transition: all 1s;
+    	transition: all 1s;
     }
     div.bento > ul li.focused .meta { 
       height: 200px;
@@ -42,12 +42,14 @@
     }
     div.bento > ul > li {
       margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
       padding: 5px 0 0 5px;
-      -webkit-transition: all 0.3s;
-    	-moz-transition: all 0.3s;
-    	-o-transition: all 0.3s;
-    	-ms-transition: all 0.3s;
-    	transition: all 0.3s;
+      -webkit-transition: all 1s;
+    	-moz-transition: all 1s;
+    	-o-transition: all 1s;
+    	-ms-transition: all 1s;
+    	transition: all 1s;
     }
     div.bento > ul > li.span {
       position: relative;
@@ -149,7 +151,7 @@
       if (!parent) {
         element.index = this.bento.items.length;
         if (width > this.column.width) {
-          element.style.width = width / this.column.width * 100 + '%';
+          element.style.width = (width + 5) / this.column.width * 100 + '%';
           element.className = (element.className || '') + ' span';
         } else {
           delete element.style.width;
@@ -201,7 +203,6 @@
       for (var i = 0; i < times; i++) ary.push(i);
       ary.forEach(function(j) {
         posts.forEach(function(post, i) {
-          console.log(post)
           post.width = parseInt(post.leader_image.width)
           post.height = parseInt(post.leader_image.height)
           post.rating = parseFloat(post.social_score_percentile);
@@ -213,21 +214,37 @@
       return [];
     }
     
+    var span = 3;
     var shifted, focused
     document.body.onclick = function(e) {
       for (var li = e.target; li && li.tagName != 'LI';) li = li.parentNode;
       if (shifted) for (var i = 0, other; other = shifted[i++];)
         other.element.style.paddingTop = '5px';
-      if (focused)   
+      if (focused) {
         focused.element.className = focused.element.className.replace(' focused', '');
+        focused.element.style.width = (focused.width * focused.scale + 5) / focused.column.width * 100 + '%';
+      }
       if (!li) return;
       focused = Pipeline.items[li.index];
       li.className = (li.className || '') + ' focused';
-      shifted = focused.getDependent().filter(function(i) {
-        return i.column != focused.column;
-      });
-      for (var i = 0, other; other = shifted[i++];)
-        other.element.style.paddingTop = '205px';
+      shifted = focused.getDependent(3)
+      var index = focused.bento.columns.indexOf(focused.column);
+      if (index + span > focused.bento.columns.length)
+        index = focused.bento.columns.length - span;
+      for (var i = index, j = index + span, newWidth = 0; i < j; i++)
+        newWidth += focused.bento.columns[i].width;
+      var width = (focused.width * focused.scale);  
+      var height = (focused.height * focused.scale);
+      var multiply = (width > focused.column.width) ? width / focused.column.width : 1;
+      var ratio = newWidth / (width + 5);
+      focused.element.style.width = multiply * ratio * 100 + '%'
+      for (var i = 0, other, min = Infinity; other = shifted[i++];)
+        if (other.top < min) min = other.top;
+      var diff = focused.top + height - min;
+      for (var i = 0, other; other = shifted[i++];) {
+        var more = (other.column == focused.column) ? 0 : ((height * ratio) - height) + 195;
+        other.element.style.paddingTop = diff + more + 'px';
+      }
     };
     
     
