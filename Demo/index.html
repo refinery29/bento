@@ -11,6 +11,9 @@
     body {
       overflow-y: scroll;
     }
+    div.bento > ul li {
+      width: 100%;
+    }
     div.bento > ul img{
       display: block;
       width: 100%;
@@ -22,12 +25,13 @@
     }
     div.bento > ul li .meta { 
       height: 0;
+      padding: 0 5px;
       overflow: hidden;
-      -webkit-transition: all 1s;
-    	-moz-transition: all 1s;
-    	-o-transition: all 1s;
-    	-ms-transition: all 1s;
-    	transition: all 1s;
+      -webkit-transition: all 0.5s;
+    	-moz-transition: all 0.5s;
+    	-o-transition: all 0.5s;
+    	-ms-transition: all 0.5s;
+    	transition: all 0.5s;
     }
     div.bento > ul li.focused .meta { 
       height: 200px;
@@ -42,14 +46,21 @@
     }
     div.bento > ul > li {
       margin: 0 auto;
-      width: 100%;
-      box-sizing: border-box;
-      padding: 5px 0 0 5px;
-      -webkit-transition: all 1s;
-    	-moz-transition: all 1s;
-    	-o-transition: all 1s;
-    	-ms-transition: all 1s;
-    	transition: all 1s;
+      -webkit-transition: all 0.5s;
+      -moz-transition: all 0.5s;
+      -o-transition: all 0.5s;
+      -ms-transition: all 0.5s;
+      transition: all 0.5s;
+    }
+    div.bento > ul > li.static {
+      -webkit-transition: none;
+      -moz-transition: none;
+      -o-transition: none;
+      -ms-transition: none;
+      transition: none;
+    }
+    div.bento > ul > li > section.picture {
+    padding: 5px 0 0 5px;
     }
     div.bento > ul > li.span {
       position: relative;
@@ -104,7 +115,7 @@
     <footer></footer>
   </div>
   <script type="template" id="post">
-    <section itemscope itemprop="leader_image">
+    <section itemscope itemprop="leader_image" class="picture">
       <img itemprop="src">
     </section>
     <section class="meta">
@@ -159,7 +170,7 @@
           element.className = element.className.replace(' span', '');
         }
         if (this.column.width > width + 5) {
-          element.style.maxWidth = ((width) / (this.column.width)) * 100 + '%';
+          element.style.maxWidth = ((width ) / (this.column.width)) * 100 + '%';
         }
       }
       var property = element.getAttribute('itemprop');
@@ -176,8 +187,8 @@
             if (this.lastWidth >= width) break;
             element.style.height = height + 'px';
             this.lastWidth = width;
-            element.onload = function() {
-              element.onload = null;
+            element.onload = element.onerror = function() {
+              element.onload = element.onerror = null;
               element.style.height = 'auto';
             }
             element.src = value.replace('/x/', function() {
@@ -215,20 +226,24 @@
       return [];
     }
     
-    var span = 3;
+    var span = parseInt((location.search.match(/span=(\d+)/i) || [0,2])[1]);
     var shifted, focused
     document.body.onclick = function(e) {
       for (var li = e.target; li && li.tagName != 'LI';) li = li.parentNode;
       if (shifted) for (var i = 0, other; other = shifted[i++];)
-        other.element.style.paddingTop = '5px';
+        other.element.style.paddingTop = '0';
       if (focused) {
         focused.element.className = focused.element.className.replace(' focused', '');
-        focused.element.style.width = (focused.width * focused.scale + 5) / focused.column.width * 100 + '%';
+        focused.element.style.width = (focused.width * focused.scale) / focused.column.width * 100 + '%';
       }
       if (!li) return;
+      if (focused == Pipeline.items[li.index]) {
+        shifted = focused = null;
+        return; 
+      }
       focused = Pipeline.items[li.index];
       li.className = (li.className || '') + ' focused';
-      shifted = focused.getDependent(3)
+      shifted = focused.getDependent(span)
       var index = focused.bento.columns.indexOf(focused.column);
       if (index + span > focused.bento.columns.length)
         index = focused.bento.columns.length - span;
@@ -238,6 +253,7 @@
       var height = (focused.height * focused.scale);
       var multiply = (width > focused.column.width) ? width / focused.column.width : 1;
       var ratio = newWidth / (width + 5);
+      focused.element.className = focused.element.className.replace(' static', '');
       focused.element.style.width = multiply * ratio * 100 + '%'
       for (var i = 0, other, min = Infinity; other = shifted[i++];)
         if (other.top < min) min = other.top;

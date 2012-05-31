@@ -335,7 +335,7 @@ Bento.Column.prototype.setBento = function(bento) {
 };
 Bento.Column.prototype.getItemAt = function(top) {
   for (var i = 0, item; item = this.items[i++];)
-    if (item.top <= top && top <= item.top + item.height)
+    if (item.top <= top && top <= item.top + (item.height * item.scale))
       return item;
 };
 /*
@@ -511,11 +511,11 @@ Bento.Item.prototype.getDependent = function(column, top, result, lookup, inters
       } else if (!this.span || this.span.indexOf(col) == -1) {
         var item = col.getItemAt(top + 1);
         if (!item) {
-          for (var j = i; --j > -1;) {
-            var other = bento.columns[j];
+          for (var k = i; --k > -1;) {
+            var other = bento.columns[k];
             var neighbour = other.getItemAt(top + 1);
             if (neighbour) {
-              if (neighbour.span && neighbour.span.length == i - j)
+              if (neighbour.span && neighbour.span.length == i - k)
                 item = neighbour;
               break;
             }

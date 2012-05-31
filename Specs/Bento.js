@@ -1,4 +1,7 @@
 describe("Bento", function() {
+  var indexer = function(i) { 
+    return i.bento.items.indexOf(i);
+  }
   describe('when given an element', function() {
     it ('should read & assign width and height of an element', function() {
       var el = document.createElement('div');
@@ -391,11 +394,24 @@ describe("Bento", function() {
               span: 3
             }
           }, items);
-          expect(bento.items[0].getDependent()).toEqual([bento.items[3], bento.items[5]])
-          expect(bento.items[1].getDependent()).toEqual([bento.items[3], bento.items[5]])
-          expect(bento.items[2].getDependent()).toEqual([bento.items[3], bento.items[5]])
-          expect(bento.items[3].getDependent()).toEqual([bento.items[4], bento.items[5]])
-          expect(bento.items[4].getDependent()).toEqual([])
+          expect(bento.items[0].getDependent(1).map(indexer)).toEqual([3, 5])
+          expect(bento.items[0].getDependent(2).map(indexer)).toEqual([3, 1])
+          expect(bento.items[0].getDependent(3).map(indexer)).toEqual([3, 1, 2])
+          expect(bento.items[1].getDependent(1).map(indexer)).toEqual([3, 5])
+          expect(bento.items[1].getDependent(2).map(indexer)).toEqual([3, 5, 2])
+          expect(bento.items[1].getDependent(3).map(indexer)).toEqual([0, 5, 2])
+          expect(bento.items[2].getDependent(1).map(indexer)).toEqual([3, 5])
+          expect(bento.items[2].getDependent(2).map(indexer)).toEqual([3, 1])
+          expect(bento.items[2].getDependent(3).map(indexer)).toEqual([0, 1])
+          expect(bento.items[3].getDependent(1).map(indexer)).toEqual([4, 5])
+          expect(bento.items[3].getDependent(2).map(indexer)).toEqual([4, 5])
+          expect(bento.items[3].getDependent(3).map(indexer)).toEqual([4, 5])
+          expect(bento.items[4].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[4].getDependent(2).map(indexer)).toEqual([5])
+          expect(bento.items[4].getDependent(3).map(indexer)).toEqual([5])
+          expect(bento.items[5].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[5].getDependent(2).map(indexer)).toEqual([])
+          expect(bento.items[5].getDependent(3).map(indexer)).toEqual([4])
         });
         
         it ('should return items after spanning item', function() {
@@ -409,13 +425,20 @@ describe("Bento", function() {
               span: 2
             }
           }, items)
-          expect(bento.items[0].getDependent()).toEqual([bento.items[2], bento.items[6]])
-          expect(bento.items[1].getDependent()).toEqual([bento.items[4], bento.items[3]])
-          expect(bento.items[2].getDependent()).toEqual([bento.items[4], bento.items[6]])
-          expect(bento.items[3].getDependent()).toEqual([bento.items[4], bento.items[6]])
-          expect(bento.items[4].getDependent()).toEqual([bento.items[5], bento.items[6]])
-          expect(bento.items[5].getDependent()).toEqual([])
-          expect(bento.items[6].getDependent()).toEqual([])
+          expect(bento.items[0].getDependent(1).map(indexer)).toEqual([2, 6])
+          expect(bento.items[0].getDependent(2).map(indexer)).toEqual([2, 1])
+          expect(bento.items[1].getDependent(1).map(indexer)).toEqual([4, 3])
+          expect(bento.items[1].getDependent(2).map(indexer)).toEqual([0, 3])
+          expect(bento.items[2].getDependent(1).map(indexer)).toEqual([4, 6])
+          expect(bento.items[2].getDependent(2).map(indexer)).toEqual([4, 3])
+          expect(bento.items[3].getDependent(1).map(indexer)).toEqual([4, 6])
+          expect(bento.items[3].getDependent(2).map(indexer)).toEqual([2, 6])
+          expect(bento.items[4].getDependent(1).map(indexer)).toEqual([5, 6])
+          expect(bento.items[4].getDependent(2).map(indexer)).toEqual([5, 6])
+          expect(bento.items[5].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[5].getDependent(2).map(indexer)).toEqual([6])
+          expect(bento.items[6].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[6].getDependent(2).map(indexer)).toEqual([5])
         })
         
         it ('should return items after multiple spanning items', function() {
@@ -433,13 +456,27 @@ describe("Bento", function() {
               span: 3
             }
           }, items);
-          expect(bento.items[0].getDependent()).toEqual([bento.items[3], bento.items[5], bento.items[6]])
-          expect(bento.items[1].getDependent()).toEqual([bento.items[3], bento.items[5], bento.items[2]])
-          expect(bento.items[2].getDependent()).toEqual([bento.items[3], bento.items[5], bento.items[6]])
-          expect(bento.items[3].getDependent()).toEqual([bento.items[4], bento.items[5], bento.items[6]])
-          expect(bento.items[4].getDependent()).toEqual([])
-          expect(bento.items[5].getDependent()).toEqual([])
-          expect(bento.items[6].getDependent()).toEqual([])
+          expect(bento.items[0].getDependent(1).map(indexer)).toEqual([3, 5, 6])
+          expect(bento.items[0].getDependent(2).map(indexer)).toEqual([3, 5, 6])
+          expect(bento.items[0].getDependent(3).map(indexer)).toEqual([3, 5, 1])
+          expect(bento.items[1].getDependent(1).map(indexer)).toEqual([3, 5, 2])
+          expect(bento.items[1].getDependent(2).map(indexer)).toEqual([0, 5, 2])
+          expect(bento.items[1].getDependent(3).map(indexer)).toEqual([0, 5, 2])
+          expect(bento.items[2].getDependent(1).map(indexer)).toEqual([3, 5, 6])
+          expect(bento.items[2].getDependent(2).map(indexer)).toEqual([0, 5, 6])
+          expect(bento.items[2].getDependent(3).map(indexer)).toEqual([0, 5, 6])
+          expect(bento.items[3].getDependent(1).map(indexer)).toEqual([4, 5, 6])
+          expect(bento.items[3].getDependent(2).map(indexer)).toEqual([4, 5, 6])
+          expect(bento.items[3].getDependent(3).map(indexer)).toEqual([4, 5, 6])
+          expect(bento.items[4].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[4].getDependent(2).map(indexer)).toEqual([5])
+          expect(bento.items[4].getDependent(3).map(indexer)).toEqual([5, 6])
+          expect(bento.items[5].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[5].getDependent(2).map(indexer)).toEqual([6])
+          expect(bento.items[5].getDependent(3).map(indexer)).toEqual([4, 6])
+          expect(bento.items[6].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[6].getDependent(2).map(indexer)).toEqual([5])
+          expect(bento.items[6].getDependent(3).map(indexer)).toEqual([4, 5])
         })
         
         it ('should return items after multiple spanning items in a reverse setup', function() {
@@ -457,13 +494,27 @@ describe("Bento", function() {
               span: 3
             }
           }, items);
-          expect(bento.items[0].getDependent()).toEqual([bento.items[2], bento.items[5], bento.items[6]])
-          expect(bento.items[1].getDependent()).toEqual([bento.items[3], bento.items[5], bento.items[6]])
-          expect(bento.items[2].getDependent()).toEqual([bento.items[3], bento.items[5], bento.items[6]])
-          expect(bento.items[3].getDependent()).toEqual([bento.items[4], bento.items[5], bento.items[6]])
-          expect(bento.items[4].getDependent()).toEqual([])
-          expect(bento.items[5].getDependent()).toEqual([])
-          expect(bento.items[6].getDependent()).toEqual([])
+          expect(bento.items[0].getDependent(1).map(indexer)).toEqual([2, 5, 6])
+          expect(bento.items[0].getDependent(2).map(indexer)).toEqual([2, 1, 6])
+          expect(bento.items[0].getDependent(3).map(indexer)).toEqual([2, 1, 6])
+          expect(bento.items[1].getDependent(1).map(indexer)).toEqual([3, 5, 6])
+          expect(bento.items[1].getDependent(2).map(indexer)).toEqual([3, 5, 6])
+          expect(bento.items[1].getDependent(3).map(indexer)).toEqual([0, 5, 6])
+          expect(bento.items[2].getDependent(1).map(indexer)).toEqual([3, 5, 6])
+          expect(bento.items[2].getDependent(2).map(indexer)).toEqual([3, 1, 6])
+          expect(bento.items[2].getDependent(3).map(indexer)).toEqual([3, 1, 6])
+          expect(bento.items[3].getDependent(1).map(indexer)).toEqual([4, 5, 6])
+          expect(bento.items[3].getDependent(2).map(indexer)).toEqual([4, 5, 6])
+          expect(bento.items[3].getDependent(3).map(indexer)).toEqual([4, 5, 6])
+          expect(bento.items[4].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[4].getDependent(2).map(indexer)).toEqual([5])
+          expect(bento.items[4].getDependent(3).map(indexer)).toEqual([5, 6])
+          expect(bento.items[5].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[5].getDependent(2).map(indexer)).toEqual([6])
+          expect(bento.items[5].getDependent(3).map(indexer)).toEqual([4, 6])
+          expect(bento.items[6].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[6].getDependent(2).map(indexer)).toEqual([5])
+          expect(bento.items[6].getDependent(3).map(indexer)).toEqual([4, 5])
         })
         
         it ('should return items after multiple spanning items in a cascade setup', function() {
@@ -482,18 +533,42 @@ describe("Bento", function() {
           var indexer = function(i) { 
             return bento.items.indexOf(i);
           }
-          expect(bento.items[0].getDependent().map(indexer)).toEqual([2, 5, 7])
-          expect(bento.items[1].getDependent().map(indexer)).toEqual([2, 5, 3])
-          expect(bento.items[2].getDependent().map(indexer)).toEqual([4, 5, 7])
-          expect(bento.items[3].getDependent().map(indexer)).toEqual([6, 5, 7])
-          expect(bento.items[4].getDependent().map(indexer)).toEqual([6, 9, 11])
-          expect(bento.items[5].getDependent().map(indexer)).toEqual([6, 9, 7])
-          expect(bento.items[6].getDependent().map(indexer)).toEqual([8, 9, 11])
-          expect(bento.items[7].getDependent().map(indexer)).toEqual([10, 9, 11])
-          expect(bento.items[8].getDependent().map(indexer)).toEqual([10])
-          expect(bento.items[9].getDependent().map(indexer)).toEqual([10, 11])
-          expect(bento.items[10].getDependent().map(indexer)).toEqual([])
-          expect(bento.items[11].getDependent().map(indexer)).toEqual([])
+          expect(bento.items[0].getDependent(1).map(indexer)).toEqual([2, 5, 7])
+          expect(bento.items[0].getDependent(2).map(indexer)).toEqual([2, 1, 3])
+          expect(bento.items[0].getDependent(3).map(indexer)).toEqual([2, 1, 3])
+          expect(bento.items[1].getDependent(1).map(indexer)).toEqual([2, 5, 3])
+          expect(bento.items[1].getDependent(2).map(indexer)).toEqual([2, 5, 3])
+          expect(bento.items[1].getDependent(3).map(indexer)).toEqual([0, 5, 3])
+          expect(bento.items[2].getDependent(1).map(indexer)).toEqual([4, 5, 7])
+          expect(bento.items[2].getDependent(2).map(indexer)).toEqual([4, 5, 7])
+          expect(bento.items[2].getDependent(3).map(indexer)).toEqual([4, 5, 3])
+          expect(bento.items[3].getDependent(1).map(indexer)).toEqual([6, 5, 7])
+          expect(bento.items[3].getDependent(2).map(indexer)).toEqual([2, 5, 7])
+          expect(bento.items[3].getDependent(3).map(indexer)).toEqual([2, 5, 7])
+          expect(bento.items[4].getDependent(1).map(indexer)).toEqual([6, 9, 11])
+          expect(bento.items[4].getDependent(2).map(indexer)).toEqual([6, 5, 7])
+          expect(bento.items[4].getDependent(3).map(indexer)).toEqual([6, 5, 7])
+          expect(bento.items[5].getDependent(1).map(indexer)).toEqual([6, 9, 7])
+          expect(bento.items[5].getDependent(2).map(indexer)).toEqual([6, 9, 7])
+          expect(bento.items[5].getDependent(3).map(indexer)).toEqual([4, 9, 7])
+          expect(bento.items[6].getDependent(1).map(indexer)).toEqual([8, 9, 11])
+          expect(bento.items[6].getDependent(2).map(indexer)).toEqual([8, 9, 11])
+          expect(bento.items[6].getDependent(3).map(indexer)).toEqual([8, 9, 7])
+          expect(bento.items[7].getDependent(1).map(indexer)).toEqual([10, 9, 11])
+          expect(bento.items[7].getDependent(2).map(indexer)).toEqual([6, 9, 11])
+          expect(bento.items[7].getDependent(3).map(indexer)).toEqual([6, 9, 11])
+          expect(bento.items[8].getDependent(1).map(indexer)).toEqual([10])
+          expect(bento.items[8].getDependent(2).map(indexer)).toEqual([10, 9, 11])
+          expect(bento.items[8].getDependent(3).map(indexer)).toEqual([10, 9, 11])
+          expect(bento.items[9].getDependent(1).map(indexer)).toEqual([10, 11])
+          expect(bento.items[9].getDependent(2).map(indexer)).toEqual([10, 11])
+          expect(bento.items[9].getDependent(3).map(indexer)).toEqual([8, 11])
+          expect(bento.items[10].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[10].getDependent(2).map(indexer)).toEqual([])
+          expect(bento.items[10].getDependent(3).map(indexer)).toEqual([11])
+          expect(bento.items[11].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[11].getDependent(2).map(indexer)).toEqual([10])
+          expect(bento.items[11].getDependent(3).map(indexer)).toEqual([10])
         })
       })
       
@@ -502,8 +577,7 @@ describe("Bento", function() {
                                                                         {rating: 0.5, width: 200, height: 100              },
                                                                         {width: 100, height: 150}, {width: 100, height: 150},
                      {rating: 0.5, width: 200, height: 100           },
-                     {rating: 0.5, width: 200, height: 100           },
-                     {rating: 0.5, width: 200, height: 100           }
+                     {rating: 0.5, width: 200, height: 100           }, {rating: 0.5, width: 200, height: 100           }
                     ];
         var bento = new Bento([100, 100, 100, 100], {
           'span_popular_images': {
@@ -514,13 +588,34 @@ describe("Bento", function() {
         var indexer = function(i) { 
           return bento.items.indexOf(i);
         }
-        expect(bento.items[0].getDependent().map(indexer)).toEqual([6])
-        expect(bento.items[1].getDependent().map(indexer)).toEqual([3, 5]);
-        expect(bento.items[2].getDependent().map(indexer)).toEqual([3, 5]);
-        expect(bento.items[3].getDependent().map(indexer)).toEqual([4, 5]);
-        expect(bento.items[4].getDependent().map(indexer)).toEqual([8]);
-        expect(bento.items[5].getDependent().map(indexer)).toEqual([8]);
-        expect(bento.items[6].getDependent().map(indexer)).toEqual([7]);
+        expect(bento.items[0].getDependent(1).map(indexer)).toEqual([6])
+        expect(bento.items[0].getDependent(2).map(indexer)).toEqual([6])
+        expect(bento.items[0].getDependent(3).map(indexer)).toEqual([6, 1, 5])
+        expect(bento.items[0].getDependent(4).map(indexer)).toEqual([6, 1, 2])
+        expect(bento.items[1].getDependent(1).map(indexer)).toEqual([3, 5]);
+        expect(bento.items[1].getDependent(2).map(indexer)).toEqual([3, 2]);
+        expect(bento.items[1].getDependent(3).map(indexer)).toEqual([0, 3, 2]);
+        expect(bento.items[1].getDependent(4).map(indexer)).toEqual([0, 3, 2]);
+        expect(bento.items[2].getDependent(1).map(indexer)).toEqual([3, 5]);
+        expect(bento.items[2].getDependent(2).map(indexer)).toEqual([1, 5]);
+        expect(bento.items[2].getDependent(3).map(indexer)).toEqual([0, 1, 5]);
+        expect(bento.items[2].getDependent(4).map(indexer)).toEqual([0, 1, 5]);
+        expect(bento.items[3].getDependent(1).map(indexer)).toEqual([4, 5]);
+        expect(bento.items[3].getDependent(2).map(indexer)).toEqual([4, 5]);
+        expect(bento.items[3].getDependent(3).map(indexer)).toEqual([0, 4, 5]);
+        expect(bento.items[3].getDependent(4).map(indexer)).toEqual([0, 4, 5]);
+        expect(bento.items[4].getDependent(1).map(indexer)).toEqual([8]);
+        expect(bento.items[4].getDependent(2).map(indexer)).toEqual([8, 5]);
+        expect(bento.items[4].getDependent(3).map(indexer)).toEqual([0, 8, 5]);
+        expect(bento.items[4].getDependent(4).map(indexer)).toEqual([0, 8, 5]);
+        expect(bento.items[5].getDependent(1).map(indexer)).toEqual([8]);
+        expect(bento.items[5].getDependent(2).map(indexer)).toEqual([4]);
+        expect(bento.items[5].getDependent(3).map(indexer)).toEqual([0, 4]);
+        expect(bento.items[5].getDependent(4).map(indexer)).toEqual([0, 4]);
+        expect(bento.items[6].getDependent(1).map(indexer)).toEqual([7]);
+        expect(bento.items[6].getDependent(2).map(indexer)).toEqual([7]);
+        expect(bento.items[6].getDependent(3).map(indexer)).toEqual([7, 4]);
+        expect(bento.items[6].getDependent(4).map(indexer)).toEqual([7, 4, 5]);
       })
       
       describe('when given span', function() {
@@ -536,52 +631,71 @@ describe("Bento", function() {
               span: 2
             }
           }, items);
-            var indexer = function(i) { 
-              return bento.items.indexOf(i);
+          expect(bento.items[0].getDependent(1).map(indexer)).toEqual([3, 6, 9])
+          expect(bento.items[0].getDependent(2).map(indexer)).toEqual([3, 1, 9])
+          expect(bento.items[0].getDependent(3).map(indexer)).toEqual([3, 1, 2])
+          expect(bento.items[1].getDependent(1).map(indexer)).toEqual([3, 6, 9])
+          expect(bento.items[1].getDependent(2).map(indexer)).toEqual([3, 6, 2])
+          expect(bento.items[1].getDependent(3).map(indexer)).toEqual([0, 6, 2])
+          expect(bento.items[2].getDependent(1).map(indexer)).toEqual([6, 4])
+          expect(bento.items[2].getDependent(2).map(indexer)).toEqual([3, 1, 4])
+          expect(bento.items[2].getDependent(3).map(indexer)).toEqual([0, 1, 4])
+          expect(bento.items[3].getDependent(1).map(indexer)).toEqual([5, 6, 9])
+          expect(bento.items[3].getDependent(2).map(indexer)).toEqual([5, 6, 9])
+          expect(bento.items[3].getDependent(3).map(indexer)).toEqual([5, 6, 4])
+          expect(bento.items[4].getDependent(1).map(indexer)).toEqual([6, 9])
+          expect(bento.items[4].getDependent(2).map(indexer)).toEqual([3, 6, 9])
+          expect(bento.items[4].getDependent(3).map(indexer)).toEqual([3, 6, 9])
+          expect(bento.items[5].getDependent(1).map(indexer)).toEqual([7])
+          expect(bento.items[5].getDependent(2).map(indexer)).toEqual([7, 6, 9])
+          expect(bento.items[5].getDependent(3).map(indexer)).toEqual([7, 6, 9])
+          expect(bento.items[6].getDependent(1).map(indexer)).toEqual([8, 9])
+          expect(bento.items[6].getDependent(2).map(indexer)).toEqual([8, 9])
+          expect(bento.items[6].getDependent(3).map(indexer)).toEqual([5, 8, 9])
+          expect(bento.items[6].getDependent(1).map(indexer)).toEqual([8, 9])
+          expect(bento.items[6].getDependent(2).map(indexer)).toEqual([8, 9])
+          expect(bento.items[6].getDependent(3).map(indexer)).toEqual([5, 8, 9])
+          expect(bento.items[7].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[7].getDependent(2).map(indexer)).toEqual([8])
+          expect(bento.items[7].getDependent(3).map(indexer)).toEqual([8, 9])
+          expect(bento.items[8].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[8].getDependent(2).map(indexer)).toEqual([9])
+          expect(bento.items[8].getDependent(3).map(indexer)).toEqual([7, 9])
+          expect(bento.items[9].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[9].getDependent(2).map(indexer)).toEqual([8])
+          expect(bento.items[9].getDependent(3).map(indexer)).toEqual([7, 8])
+        })
+      })
+      describe('when images have different heights', function() {
+        it ('should return dependent items', function() {
+          var items = [{width: 100, height: 100}, {width: 100, height: 200}, {width: 100, height: 180}, 
+                       {width: 100, height: 150}, {rating: 0.5, width: 200, height: 100              }, 
+                       {width: 100, height: 100}
+                      ];
+          var bento = new Bento([100, 100, 100], {
+            'span_popular_images': {
+              rating: [0.01, 0.5],
+              span: 2
             }
-            expect(bento.items[0].getDependent(1).map(indexer)).toEqual([3, 6, 9])
-            expect(bento.items[0].getDependent(2).map(indexer)).toEqual([3, 1, 9])
-            expect(bento.items[0].getDependent(3).map(indexer)).toEqual([3, 1, 2])
-            
-            expect(bento.items[1].getDependent(1).map(indexer)).toEqual([3, 6, 9])
-            expect(bento.items[1].getDependent(2).map(indexer)).toEqual([3, 6, 2])
-            expect(bento.items[1].getDependent(3).map(indexer)).toEqual([0, 6, 2])
-            
-            expect(bento.items[2].getDependent(1).map(indexer)).toEqual([6, 4])
-            expect(bento.items[2].getDependent(2).map(indexer)).toEqual([3, 1, 4])
-            expect(bento.items[2].getDependent(3).map(indexer)).toEqual([0, 1, 4])
-            
-            expect(bento.items[3].getDependent(1).map(indexer)).toEqual([5, 6, 9])
-            expect(bento.items[3].getDependent(2).map(indexer)).toEqual([5, 6, 9])
-            expect(bento.items[3].getDependent(3).map(indexer)).toEqual([5, 6, 4])
-            
-            expect(bento.items[4].getDependent(1).map(indexer)).toEqual([6, 9])
-            expect(bento.items[4].getDependent(2).map(indexer)).toEqual([3, 6, 9])
-            expect(bento.items[4].getDependent(3).map(indexer)).toEqual([3, 6, 9])
-            
-            expect(bento.items[5].getDependent(1).map(indexer)).toEqual([7])
-            expect(bento.items[5].getDependent(2).map(indexer)).toEqual([7, 6, 9])
-            expect(bento.items[5].getDependent(3).map(indexer)).toEqual([7, 6, 9])
-            
-            expect(bento.items[6].getDependent(1).map(indexer)).toEqual([8, 9])
-            expect(bento.items[6].getDependent(2).map(indexer)).toEqual([8, 9])
-            expect(bento.items[6].getDependent(3).map(indexer)).toEqual([5, 8, 9])
-            
-            expect(bento.items[6].getDependent(1).map(indexer)).toEqual([8, 9])
-            expect(bento.items[6].getDependent(2).map(indexer)).toEqual([8, 9])
-            expect(bento.items[6].getDependent(3).map(indexer)).toEqual([5, 8, 9])
-            
-            expect(bento.items[7].getDependent(1).map(indexer)).toEqual([])
-            expect(bento.items[7].getDependent(2).map(indexer)).toEqual([8])
-            expect(bento.items[7].getDependent(3).map(indexer)).toEqual([8, 9])
-            
-            expect(bento.items[8].getDependent(1).map(indexer)).toEqual([])
-            expect(bento.items[8].getDependent(2).map(indexer)).toEqual([9])
-            expect(bento.items[8].getDependent(3).map(indexer)).toEqual([7, 9])
-            
-            expect(bento.items[9].getDependent(1).map(indexer)).toEqual([])
-            expect(bento.items[9].getDependent(2).map(indexer)).toEqual([8])
-            expect(bento.items[9].getDependent(3).map(indexer)).toEqual([7, 8])
+          }, items);
+          expect(bento.items[0].getDependent(1).map(indexer)).toEqual([3])
+          expect(bento.items[0].getDependent(2).map(indexer)).toEqual([3, 1])
+          expect(bento.items[0].getDependent(3).map(indexer)).toEqual([3, 1, 2])
+          expect(bento.items[1].getDependent(1).map(indexer)).toEqual([4])
+          expect(bento.items[1].getDependent(2).map(indexer)).toEqual([4, 2])
+          expect(bento.items[1].getDependent(3).map(indexer)).toEqual([0, 4, 2])
+          expect(bento.items[2].getDependent(1).map(indexer)).toEqual([4])
+          expect(bento.items[2].getDependent(2).map(indexer)).toEqual([1])
+          expect(bento.items[2].getDependent(3).map(indexer)).toEqual([0, 1])
+          expect(bento.items[3].getDependent(1).map(indexer)).toEqual([5])
+          expect(bento.items[3].getDependent(2).map(indexer)).toEqual([5, 1])
+          expect(bento.items[3].getDependent(3).map(indexer)).toEqual([5, 1, 2])
+          expect(bento.items[4].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[4].getDependent(2).map(indexer)).toEqual([])
+          expect(bento.items[4].getDependent(3).map(indexer)).toEqual([3])
+          expect(bento.items[5].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[5].getDependent(2).map(indexer)).toEqual([4])
+          expect(bento.items[5].getDependent(3).map(indexer)).toEqual([4])
         })
       })
     })
