@@ -175,16 +175,18 @@
       if (!parent) {
         element.index = this.bento.items.indexOf(this);
         if (element.index == -1) element.index = this.bento.items.length;
+        
         if (width > this.column.width) {
-          element.style.width = (width + 5) / this.column.width * 100 + '%';
+          this.relativeWidth = (width + 5) / this.column.width * 100 + '%';
           element.className = (element.className || '') + ' span';
         } else {
           delete element.style.width;
           element.className = element.className.replace(' span', '');
         }
         if (this.column.width > width + 5) {
-          element.style.width = ((width) / (this.column.width - 5)) * 100 + '%';
+          this.relativeWidth = (width / (this.column.width - 5)) * 100 + '%';
         }
+        element.style.width = this.relativeWidth;
       }
       var property = element.getAttribute('itemprop');
       if (property) {
@@ -251,8 +253,7 @@
         other.element.style.paddingTop = '0';
       if (focused) {
         focused.element.className = focused.element.className.replace(' focused', '');
-        var percentile = (focused.width * focused.scale + (focused.span ? 5 : 0)) / focused.column.width * 100;
-        focused.element.style.width = percentile  + '%';
+        focused.element.style.width = focused.relativeWidth || '100%';
         focused.element.getElementsByTagName('section')[1].style.height = '0px'
         if (focused.oldMarginLeft != null) {
           focused.setMarginLeft(focused.oldMarginLeft);
