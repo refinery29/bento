@@ -29,9 +29,6 @@
       font: 1.5em Georgia;
     }
     div.bento > ul li.focused {
-      background: #eaeaea;
-      margin-right: -5px;
-      padding-right: 5px;
       position: relative;
       z-index: 5;
     }
@@ -186,7 +183,7 @@
           element.className = element.className.replace(' span', '');
         }
         if (this.column.width > width + 5) {
-          element.style.maxWidth = ((width ) / (this.column.width - 5)) * 100 + '%';
+          element.style.width = ((width) / (this.column.width - 5)) * 100 + '%';
         }
       }
       var property = element.getAttribute('itemprop');
@@ -201,11 +198,12 @@
             break;
           case 'IMG':
             if (this.lastWidth >= width) break;
-            element.style.height = height + 'px';
+            var o = element.offsetHeight;
+            //element.style.height = height + 'px';
             this.lastWidth = width;
             element.onload = element.onerror = function() {
               element.onload = element.onerror = null;
-              element.style.height = 'auto';
+              //element.style.height = 'auto';
             }
             element.src = value.replace('/x/', function() {
               return '/' + width + 'x' + '/'
@@ -298,10 +296,11 @@
           return '/' + newWidth + 'x' + '/'
         })
       }
-      var width = (focused.width * focused.scale);
-      var height = (focused.height * focused.scale);
+      var actualWidth = (focused.width * focused.scale)
+      var width = Math.max(actualWidth, focused.column.width);
+      var height = focused.height * focused.scale / actualWidth * width;
       var multiply = (width > focused.column.width) ? width / focused.column.width : 1;
-      var ratio = (newWidth) / (width);
+      var ratio = (newWidth) / width;
       focused.element.style.width = multiply * ratio * 100 + '%';
       var meta = focused.element.getElementsByTagName('section')[1];
       meta.style.width = (newWidth - 10) + 'px';

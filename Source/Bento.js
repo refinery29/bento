@@ -413,7 +413,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
     // Fill a hole and reduce offset for the next item
     this.hole = hole;
     var ratio = this.width / this.height;
-    var width = Math.min((hole[1] - gutter) * ratio, position.width - gutter);
+    var width = Math.min((hole[1] - gutter) * ratio, position.width);
     var height = width / ratio;
     for (var i = 0, previous, next, other; other = position.items[i++];)
       if (other.top < hole[0] && (!previous || previous.top < other.top))
