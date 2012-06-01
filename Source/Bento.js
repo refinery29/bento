@@ -447,11 +447,12 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   if (bento) 
     var columns = bento.columns;
   if (width == null)
-    width = position.width - gutter;
+    width = position.width;
     
   // Calculate width for spanning item
   if (span && bento) {
     this.span = span;
+    width -= gutter
     for (var i = 0, j = span.length; i < j; i++)
       width += span[i].width
   } else delete this.span;
@@ -564,6 +565,16 @@ Bento.Item.prototype.setOffsetTop = function(offsetTop) {
   if (this.element) this.element.style.marginTop = offsetTop / this.column.width * 100 + '%';
   return this.offsetTop = offsetTop;
 }
+Bento.Item.prototype.setPaddingTop = function(paddingTop) {
+  paddingTop = Math.round(paddingTop)
+  if (this.element) this.element.style.paddingTop = paddingTop / this.column.width * 100 + '%';
+  return this.paddingTop = paddingTop;
+}
+Bento.Item.prototype.setMarginLeft = function(marginLeft) {
+  marginLeft = Math.round(marginLeft)
+  if (this.element) this.element.style.marginLeft = marginLeft / this.column.width * 100 + '%';
+  return this.marginLeft = marginLeft;
+}
 Bento.Item.prototype.setContent = function(content) {
   if (content != this.content) {
     if (content.rating) this.rating = content.rating;
@@ -578,7 +589,7 @@ Bento.Item.prototype.setContent = function(content) {
   if (this.span && this.element) {
     if (this.bento.columns.indexOf(this.span[0]) < this.bento.columns.indexOf(this.column)) {
       var margin = this.column.width - this.width * this.scale - this.bento.gutter;
-      this.element.style.marginLeft = margin / this.column.width * 100 + '%';
+      this.setMarginLeft(margin);
     }
   }  
   if (this.column.element) this.inject();

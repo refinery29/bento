@@ -10,9 +10,11 @@
     }
     body {
       overflow-y: scroll;
+      overflow-x: hidden;
     }
     div.bento > ul li {
       width: 100%;
+      overflow: hidden;
     }
     div.bento > ul img{
       display: block;
@@ -23,18 +25,26 @@
       margin: 0;
       font: 1.5em Georgia;
     }
+    div.bento > ul li.focused {
+      background: #eaeaea;
+      margin-right: -5px;
+      padding-right: 5px;
+      position: relative;
+      z-index: 5;
+    }
     div.bento > ul li .meta { 
       height: 0;
       padding: 0 5px;
       overflow: hidden;
-      -webkit-transition: all 0.5s;
-    	-moz-transition: all 0.5s;
-    	-o-transition: all 0.5s;
-    	-ms-transition: all 0.5s;
-    	transition: all 0.5s;
+      -webkit-transition: height 0.5s;
+    	-moz-transition: height 0.5s;
+    	-o-transition: height 0.5s;
+    	-ms-transition: height 0.5s;
+    	transition: height 0.5s;
     }
-    div.bento > ul li.focused .meta { 
-      height: 200px;
+    div.bento > ul li .meta .close {
+      float: right;
+      cursor: pointer;
     }
     div.bento > ul {
       float: left;
@@ -122,6 +132,9 @@
       <a itemprop="url">
         <h2 itemprop="title"></h2>
       </a>
+      <a href="#" class="close">
+        Close
+      </a>
       <time itemprop="published">
       
       </time>
@@ -170,7 +183,7 @@
           element.className = element.className.replace(' span', '');
         }
         if (this.column.width > width + 5) {
-          element.style.maxWidth = ((width ) / (this.column.width)) * 100 + '%';
+          element.style.maxWidth = ((width ) / (this.column.width - 5)) * 100 + '%';
         }
       }
       var property = element.getAttribute('itemprop');
@@ -226,7 +239,7 @@
       return [];
     }
     
-    var span = parseInt((location.search.match(/span=(\d+)/i) || [0,2])[1]);
+    var defaultSpan = parseInt((location.search.match(/span=(\d+)/i) || [0,2])[1]);
     var shifted, focused
     document.body.onclick = function(e) {
       for (var li = e.target; li && li.tagName != 'LI';) li = li.parentNode;
@@ -234,7 +247,15 @@
         other.element.style.paddingTop = '0';
       if (focused) {
         focused.element.className = focused.element.className.replace(' focused', '');
-        focused.element.style.width = (focused.width * focused.scale) / focused.column.width * 100 + '%';
+        var percentile = (focused.width * focused.scale + (focused.span ? 5 : 0)) / focused.column.width * 100;
+        focused.element.style.width = percentile  + '%';
+        focused.element.getElementsByTagName('section')[1].style.height = '0px'
+        if (focused.oldMarginLeft != null) {
+          focused.setMarginLeft(focused.oldMarginLeft);
+          delete focused.oldMarginLeft;
+        } else if (focused.marginLeft) {
+          focused.setMarginLeft(0);
+        }
       }
       if (!li) return;
       if (focused == Pipeline.items[li.index]) {
@@ -242,25 +263,39 @@
         return; 
       }
       focused = Pipeline.items[li.index];
+      var span = Math.max(defaultSpan, focused.span ? focused.span.length + 1 : 1);
       li.className = (li.className || '') + ' focused';
-      shifted = focused.getDependent(span)
-      var index = focused.bento.columns.indexOf(focused.column);
-      if (index + span > focused.bento.columns.length)
-        index = focused.bento.columns.length - span;
+      shifted = focused.getDependent(span);
+      var columns = focused.bento.columns;
+      var index = columns.indexOf(focused.column);
+      var total = columns.length;
+      if (index + span > total) {
+        var newIndex = total - span;
+        for (var i = index; i-- > newIndex;) {
+          var marginLeft = columns[i].width;
+        }
+        focused.oldMarginLeft = focused.marginLeft;
+        focused.setMarginLeft(- marginLeft)
+        index = newIndex;
+      }
       for (var i = index, j = index + span, newWidth = 0; i < j; i++)
         newWidth += focused.bento.columns[i].width;
-      var width = (focused.width * focused.scale);  
+      var width = (focused.width * focused.scale);
       var height = (focused.height * focused.scale);
       var multiply = (width > focused.column.width) ? width / focused.column.width : 1;
-      var ratio = newWidth / (width + 5);
-      focused.element.className = focused.element.className.replace(' static', '');
-      focused.element.style.width = multiply * ratio * 100 + '%'
+      var ratio = (newWidth) / (width);
+      focused.element.style.width = multiply * ratio * 100 + '%';
+      var meta = focused.element.getElementsByTagName('section')[1];
+      meta.style.width = (newWidth - 10) + 'px';
+      z = meta;
+      var metaHeight = meta.scrollHeight;
+      meta.style.height = metaHeight + 'px'
       for (var i = 0, other, min = Infinity; other = shifted[i++];)
         if (other.top < min) min = other.top;
       var diff = focused.top + height - min;
       for (var i = 0, other; other = shifted[i++];) {
-        var more = (other.column == focused.column) ? 0 : ((height * ratio) - height) + 195;
-        other.element.style.paddingTop = diff + more + 'px';
+        var more = (other.column == focused.column) ? 0 : ((height * ratio) - height) + metaHeight;
+        other.setPaddingTop(diff + more);
       }
     };
     
