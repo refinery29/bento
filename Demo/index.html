@@ -16,9 +16,12 @@
       width: 100%;
       overflow: hidden;
     }
-    div.bento > ul img{
+    div.bento > ul li img, div.bento > ul li.focused img.loaded{
       display: block;
       width: 100%;
+    }
+    div.bento > ul li img.loaded, div.bento > ul li img.loading, div.bento > ul li.focused img.loaded + img{
+      display: none;
     }
     div.bento > ul li h2{
       padding: 0;
@@ -282,6 +285,19 @@
       }
       for (var i = index, j = index + span, newWidth = 0; i < j; i++)
         newWidth += focused.bento.columns[i].width;
+      if (!focused.bigger) {  
+        var original = li.getElementsByTagName('img')[0]
+        var bigger = focused.bigger = original.cloneNode();
+        bigger.className = 'loading';
+        original.parentNode.insertBefore(bigger, original)
+        bigger.onload = function() {
+          bigger.onload = null;
+          bigger.className = 'loaded';
+        }
+        bigger.src = bigger.src.replace(/\/\d*x\//, function() {
+          return '/' + newWidth + 'x' + '/'
+        })
+      }
       var width = (focused.width * focused.scale);
       var height = (focused.height * focused.scale);
       var multiply = (width > focused.column.width) ? width / focused.column.width : 1;
