@@ -269,12 +269,12 @@
       var columns = focused.bento.columns;
       var index = columns.indexOf(focused.column);
       var total = columns.length;
+      focused.oldMarginLeft = focused.marginLeft;
       if (index + span > total) {
         var newIndex = total - span;
         for (var i = index; i-- > newIndex;) {
           var marginLeft = columns[i].width;
         }
-        focused.oldMarginLeft = focused.marginLeft;
         focused.setMarginLeft(- marginLeft)
         index = newIndex;
       }
