@@ -482,6 +482,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
       holes.push([col.height, holeHeight, col]);
     col.setHeight(position.height + height + gutter)
   }
+  
   // Register item in the column
   this.column = position;
   this.setOffsetTop(offsetTop);
@@ -504,9 +505,16 @@ Bento.Item.prototype.getDependent = function(column, top, result, lookup, inters
   var columns = bento.columns;
   var index = columns.indexOf(column);
   if (span) {
-    if (index + span > columns.length)
-      index = columns.length - span;
-    for (var i = index, j = index + span; i < j; i++) {
+    var offset = 0;
+    if (this.span) {
+      for (var i = 0, col; col = this.span[i++];) {
+        var colIndex = columns.indexOf(col);
+        if (colIndex - index < offset) offset = colIndex - index;
+      }
+    }
+    if (index + span + offset > columns.length)
+      index = columns.length - span - offset;
+    for (var i = index + offset, j = index + span + offset; i < j; i++) {
       var col = columns[i];
       if (col == column) {
         this.getDependent(col, top, result)

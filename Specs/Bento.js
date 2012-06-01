@@ -733,6 +733,31 @@ describe("Bento", function() {
           expect(bento.items[5].getDependent(3).map(indexer)).toEqual([4])
           expect(bento.items[5].getDependent(4).map(indexer)).toEqual([4])
         })
+        describe('and they are on the left', function() {
+          it ('should return dependent items', function() {
+            var items = [{width: 100, height: 90}, {width: 100, height: 100}, {width: 100, height: 200},
+                         {width: 200, height: 100, rating: 0.5              }]
+            var bento = new Bento([100, 100, 100], {
+              'span_popular_images': {
+                rating: [0.01, 0.5],
+                span: 2
+              }
+            }, items);
+            console.log(bento.items.map(function(i) { return i.bento.columns.indexOf(i.column)}))
+            expect(bento.items[0].getDependent(1).map(indexer)).toEqual([3])
+            expect(bento.items[0].getDependent(2).map(indexer)).toEqual([1])
+            expect(bento.items[0].getDependent(3).map(indexer)).toEqual([1, 2])
+            expect(bento.items[1].getDependent(1).map(indexer)).toEqual([3])
+            expect(bento.items[1].getDependent(2).map(indexer)).toEqual([3, 2])
+            expect(bento.items[1].getDependent(3).map(indexer)).toEqual([0, 3, 2])
+            expect(bento.items[2].getDependent(1).map(indexer)).toEqual([])
+            expect(bento.items[2].getDependent(2).map(indexer)).toEqual([1])
+            expect(bento.items[2].getDependent(3).map(indexer)).toEqual([0, 1])
+            expect(bento.items[3].getDependent(1).map(indexer)).toEqual([])
+            expect(bento.items[3].getDependent(2).map(indexer)).toEqual([])
+            expect(bento.items[3].getDependent(3).map(indexer)).toEqual([2])
+          })
+        })
       })
     })
   });
