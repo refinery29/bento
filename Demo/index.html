@@ -242,6 +242,9 @@
     var defaultSpan = parseInt((location.search.match(/span=(\d+)/i) || [0,2])[1]);
     var shifted, focused
     document.body.onclick = function(e) {
+      var target = e.target;
+      if (target.tagName == 'A' && target.className == 'close')
+        e.preventDefault();
       for (var li = e.target; li && li.tagName != 'LI';) li = li.parentNode;
       if (shifted) for (var i = 0, other; other = shifted[i++];)
         other.element.style.paddingTop = '0';
