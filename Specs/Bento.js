@@ -698,6 +698,42 @@ describe("Bento", function() {
           expect(bento.items[5].getDependent(3).map(indexer)).toEqual([4])
         })
       })
+      describe('when some images are left-oriented', function() {
+        it ('should return dependent items', function() {
+          var items = [{width: 100, height: 100}, {width: 100, height: 50}, {width: 100, height: 75}, {width: 100, height: 100},
+                       {width: 200, height: 200, rating: 0.5             }, {width: 200, height: 200, rating: 0.5             }];
+          var bento = new Bento([100, 100, 100, 100], {
+            'span_popular_images': {
+              rating: [0.01, 0.5],
+              span: 2
+            }
+          }, items);
+          expect(bento.items[0].getDependent(1).map(indexer)).toEqual([4])
+          expect(bento.items[0].getDependent(2).map(indexer)).toEqual([4, 1])
+          expect(bento.items[0].getDependent(3).map(indexer)).toEqual([4, 1, 2, 5])
+          expect(bento.items[0].getDependent(4).map(indexer)).toEqual([4, 1, 2, 3])
+          expect(bento.items[1].getDependent(1).map(indexer)).toEqual([4])
+          expect(bento.items[1].getDependent(2).map(indexer)).toEqual([4, 2, 5])
+          expect(bento.items[1].getDependent(3).map(indexer)).toEqual([4, 2, 3])
+          expect(bento.items[1].getDependent(4).map(indexer)).toEqual([0, 2, 3])
+          expect(bento.items[2].getDependent(1).map(indexer)).toEqual([5])
+          expect(bento.items[2].getDependent(2).map(indexer)).toEqual([3])
+          expect(bento.items[2].getDependent(3).map(indexer)).toEqual([4, 1, 3])
+          expect(bento.items[2].getDependent(4).map(indexer)).toEqual([0, 1, 3])
+          expect(bento.items[3].getDependent(1).map(indexer)).toEqual([5])
+          expect(bento.items[3].getDependent(2).map(indexer)).toEqual([2, 5])
+          expect(bento.items[3].getDependent(3).map(indexer)).toEqual([4, 1, 2, 5])
+          expect(bento.items[3].getDependent(4).map(indexer)).toEqual([0, 1, 2, 5])
+          expect(bento.items[4].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[4].getDependent(2).map(indexer)).toEqual([])
+          expect(bento.items[4].getDependent(3).map(indexer)).toEqual([5])
+          expect(bento.items[4].getDependent(4).map(indexer)).toEqual([5])
+          expect(bento.items[5].getDependent(1).map(indexer)).toEqual([])
+          expect(bento.items[5].getDependent(2).map(indexer)).toEqual([])
+          expect(bento.items[5].getDependent(3).map(indexer)).toEqual([4])
+          expect(bento.items[5].getDependent(4).map(indexer)).toEqual([4])
+        })
+      })
     })
   });
 })

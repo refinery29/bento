@@ -501,24 +501,34 @@ Bento.Item.prototype.getDependent = function(column, top, result, lookup, inters
     var clean = true;
     result = [];
   }
-  var index = bento.columns.indexOf(column);
+  var columns = bento.columns;
+  var index = columns.indexOf(column);
   if (span) {
-    if (index + span > bento.columns.length)
-      index = bento.columns.length - span;
+    if (index + span > columns.length)
+      index = columns.length - span;
     for (var i = index, j = index + span; i < j; i++) {
-      var col = bento.columns[i];
+      var col = columns[i];
       if (col == column) {
         this.getDependent(col, top, result)
       } else if (!this.span || this.span.indexOf(col) == -1) {
         var item = col.getItemAt(top + 1);
         if (!item) {
           for (var k = i; --k > -1;) {
-            var other = bento.columns[k];
-            var neighbour = other.getItemAt(top + 1);
+            var neighbour = columns[k].getItemAt(top + 1);
             if (neighbour) {
               if (neighbour.span && neighbour.span.length == i - k)
                 item = neighbour;
               break;
+            }
+          }
+          if (!item) {
+            for (var k = i, j = columns.length; k++ < j;) {
+              var neighbour = columns[k].getItemAt(top + 1);
+              if (neighbour) {
+                if (neighbour.span && neighbour.span.indexOf(col) > -1)
+                  item = neighbour;
+                break;
+              }
             }
           }
         }
@@ -526,7 +536,7 @@ Bento.Item.prototype.getDependent = function(column, top, result, lookup, inters
       }
     }
   } else {
-    for (var i = 0, col; col = bento.columns[i]; i++) {
+    for (var i = 0, col; col = columns[i]; i++) {
       for (var j = 0, item; item = col.items[j]; j++) {
         if (item.top <= top) continue;
         var better = (!result[i] || result[i].top > item.top);
