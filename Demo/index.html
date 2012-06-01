@@ -275,9 +275,8 @@
       focused.oldMarginLeft = focused.marginLeft;
       if (index + span > total) {
         var newIndex = total - span;
-        for (var i = index; i-- > newIndex;) {
-          var marginLeft = columns[i].width;
-        }
+        for (var i = index - 1, marginLeft = 0; i >= newIndex; i--)
+          marginLeft += columns[i].width;
         focused.setMarginLeft(- marginLeft)
         index = newIndex;
       }
@@ -290,7 +289,6 @@
       focused.element.style.width = multiply * ratio * 100 + '%';
       var meta = focused.element.getElementsByTagName('section')[1];
       meta.style.width = (newWidth - 10) + 'px';
-      z = meta;
       var metaHeight = meta.scrollHeight;
       meta.style.height = metaHeight + 'px'
       for (var i = 0, other, min = Infinity; other = shifted[i++];)
