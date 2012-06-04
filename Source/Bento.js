@@ -413,7 +413,7 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
     // Fill a hole and reduce offset for the next item
     this.hole = hole;
     var ratio = this.width / this.height;
-    var width = Math.min((hole[1] - gutter) * ratio, position.width);
+    var width = Math.min((hole[1] - gutter) * ratio, position.width - gutter);
     var height = width / ratio;
     for (var i = 0, previous, next, other; other = position.items[i++];)
       if (other.top < hole[0] && (!previous || previous.top < other.top))
@@ -447,12 +447,11 @@ Bento.Item.prototype.setPosition = function(position, prepend) {
   if (bento) 
     var columns = bento.columns;
   if (width == null)
-    width = position.width;
+    width = position.width - gutter ;
     
   // Calculate width for spanning item
   if (span && bento) {
     this.span = span;
-    width -= gutter
     for (var i = 0, j = span.length; i < j; i++)
       width += span[i].width
   } else delete this.span;

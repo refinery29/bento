@@ -371,6 +371,14 @@ describe("Bento", function() {
         expect(updated.bento).toBe(bento);
       })
     })
+    describe('when gutter is set', function() {
+      it ('should resize images accordingly', function() {
+        var items = [{width: 100, height: 100}, {width: 100, height: 200}];
+        var bento = new Bento(5, [100, 200], items);
+        expect(bento.columns[0].height).toEqual(100);
+        expect(bento.columns[1].height).toEqual(395);
+      })
+    })
     describe('#getDependent', function() {
       describe('in a simple layout without spans', function() {
         it ('should return immediately next element in column', function() {

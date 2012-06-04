@@ -14,6 +14,7 @@
     }
     div.bento > ul li {
       width: 100%;
+      overflow: hidden;
     }
     div.bento > ul li img, div.bento > ul li.focused img.loaded{
       display: block;
@@ -27,48 +28,23 @@
       margin: 0;
       font: 1.5em Georgia;
     }
-    div.bento > ul li:hover img{
+    div.bento > ul li.focused {
       position: relative;
       z-index: 5;
     }
     div.bento > ul li .meta { 
-      padding: 5px;
-      background: rgba(255, 255, 255, 0.8);
-      position: absolute;
-      -webkit-transform: rotateY(-90deg);
-    	-webkit-transition: -webkit-transform 0.3s;
-      -webkit-transform-origin: 0% 50%;
-      -webkit-perspective-origin: 0% 50%;
-      -webkit-transform-style: preserve-3d;
-      -webkit-perspective: 400;
-      z-index: 10;
-      line-height: 30px;
-    }
-    div.bento > ul li.reversed .meta { 
-      -webkit-transform-origin: 100% 50%;
-    }
-    div.bento > ul li .meta .close {
-      height: 42px;
-      width: 42px;
-      font: 0px/0px '0';
-      margin-right: -6px;
-      margin-top: -6px;
-      background-image: url(http://sdwebx.worldbank.org/climateportalb/images/water/close-button.png);
-    }
-    div.bento > ul li.focused .meta {
-      -webkit-transform: rotateY(0deg);
-      -moz-transform: rotateY(0deg);
-      -ms-transform: rotateY(0deg);
-      -o-transform: rotateY(0deg);
-      transform: rotateY(0deg);
-      z-index: 20;
+      height: 0;
+      padding: 0 5px;
+      overflow: hidden;
+      -webkit-transition: height 0.3s;
+    	-moz-transition: height 0.3s;
+    	-o-transition: height 0.3s;
+    	-ms-transition: height 0.3s;
+    	transition: height 0.3s;
     }
     div.bento > ul li .meta .close {
       float: right;
       cursor: pointer;
-    }
-    div.bento > ul li.hole {
-      z-index: 6;
     }
     div.bento > ul {
       float: left;
@@ -80,6 +56,11 @@
     }
     div.bento > ul > li {
       margin: 0 auto;
+      -webkit-transition: all 0.3s;
+      -moz-transition: all 0.3s;
+      -o-transition: all 0.3s;
+      -ms-transition: all 0.3s;
+      transition: all 0.3s;
     }
     div.bento > ul > li.static {
       -webkit-transition: none;
@@ -90,6 +71,10 @@
     }
     div.bento > ul > li > section.picture {
     padding: 5px 0 0 5px;
+    }
+    div.bento > ul > li.span {
+      position: relative;
+      z-index: 5;
     }
     @media all and (max-width:800px) {
       div.bento > ul {
@@ -190,6 +175,7 @@
       if (!parent) {
         element.index = this.bento.items.indexOf(this);
         if (element.index == -1) element.index = this.bento.items.length;
+        
         if (width > this.column.width) {
           this.relativeWidth = (width + 5) / this.column.width * 100 + '%';
           element.className = (element.className || '') + ' span';
@@ -200,8 +186,6 @@
         if (this.column.width > width + 5) {
           this.relativeWidth = (width / (this.column.width - 5)) * 100 + '%';
         }
-        if (this.hole) element.className = (element.className || '') + ' hole';
-        else element.className = element.className.replace(' hole', '');
         element.style.width = this.relativeWidth;
       }
       var property = element.getAttribute('itemprop');
@@ -267,51 +251,68 @@
       for (var li = e.target; li && li.tagName != 'LI';) li = li.parentNode;
       if (shifted) for (var i = 0, other; other = shifted[i++];)
         other.element.style.paddingTop = '0';
-      if (!li) return;
       if (focused) {
-        var old = focused;
         focused.element.className = focused.element.className.replace(' focused', '');
-        setTimeout(function() {
-          old.element.className = old.element.className.replace(' reversed', '');
-        }, 300)
+        focused.element.style.width = focused.relativeWidth || '100%';
+        focused.element.getElementsByTagName('section')[1].style.height = '0px'
+        if (focused.oldMarginLeft != null) {
+          focused.setMarginLeft(focused.oldMarginLeft);
+          delete focused.oldMarginLeft;
+        } else if (focused.marginLeft) {
+          focused.setMarginLeft(0);
+        }
       }
+      if (!li) return;
       if (focused == Pipeline.items[li.index]) {
         shifted = focused = null;
         return; 
-      }  
+      }
       focused = Pipeline.items[li.index];
+      var span = Math.max(defaultSpan, focused.span ? focused.span.length + 1 : 1);
       li.className = (li.className || '') + ' focused';
-      var section = li.getElementsByTagName('section')[1];
-      if (section) {
-        section.style.top = focused.top + 'px';
-        var columns = focused.bento.columns;
-        var right = focused.column;
-        var left = focused.column;
-        var min = columns.indexOf(right);
-        var max = min;
-        var distance = 0;
-        if (focused.span) {
-          for (var i = 0, span; span = focused.span[i++];) {
-            var j = columns.indexOf(span)
-            if (j > max) {
-              max = j;
-              right = span;
-            }
-            if (j < min) {
-              min = j;
-              left = span;
-            }
-          }
+      shifted = focused.getDependent(span);
+      var columns = focused.bento.columns;
+      var index = columns.indexOf(focused.column);
+      var total = columns.length;
+      focused.oldMarginLeft = focused.marginLeft;
+      if (index + span > total) {
+        var newIndex = total - span;
+        for (var i = index - 1, marginLeft = 0; i >= newIndex; i--)
+          marginLeft += columns[i].width;
+        focused.setMarginLeft(- marginLeft)
+        index = newIndex;
+      }
+      for (var i = index, j = index + span, newWidth = 0; i < j; i++)
+        newWidth += focused.bento.columns[i].width;
+      if (!focused.bigger) {  
+        var original = li.getElementsByTagName('img')[0]
+        var bigger = focused.bigger = original.cloneNode();
+        bigger.className = 'loading';
+        original.parentNode.insertBefore(bigger, original)
+        bigger.onload = function() {
+          bigger.onload = null;
+          bigger.className = 'loaded';
         }
-        var overflow = (max == columns.length - 1);
-        var index = overflow ? min - 1 : max + 1;
-        var width = columns[index].width - (overflow ? 5 : 0);
-        if (overflow) li.className = (li.className || '') + ' reversed';
-        section.style.width = width + 'px';
-        var left = 0;
-        for (var i = 0, j = index; i < j; i++)
-          left += columns[i].width;
-        section.style.left = left + 'px';
+        bigger.src = bigger.src.replace(/\/\d*x\//, function() {
+          return '/' + newWidth + 'x' + '/'
+        })
+      }
+      var actualWidth = (focused.width * focused.scale)
+      var width = Math.max(actualWidth, focused.column.width);
+      var height = focused.height * focused.scale / actualWidth * width;
+      var multiply = (width > focused.column.width) ? width / focused.column.width : 1;
+      var ratio = (newWidth) / width;
+      focused.element.style.width = multiply * ratio * 100 + '%';
+      var meta = focused.element.getElementsByTagName('section')[1];
+      meta.style.width = (newWidth - 10) + 'px';
+      var metaHeight = meta.scrollHeight;
+      meta.style.height = metaHeight + 'px'
+      for (var i = 0, other, min = Infinity; other = shifted[i++];)
+        if (other.top < min) min = other.top;
+      var diff = focused.top + height - min;
+      for (var i = 0, other; other = shifted[i++];) {
+        var more = (other.column == focused.column) ? 0 : ((height * ratio) - height) + metaHeight;
+        other.setPaddingTop(diff + more);
       }
     };
     
