@@ -27,12 +27,13 @@
       margin: 0;
       font: 1.5em Georgia;
     }
-    div.bento > ul li:hover img{
+    div.bento > ul li.span img{
       position: relative;
       z-index: 5;
     }
     div.bento > ul li .meta { 
       padding: 5px;
+      font-size: 0.75em;
       background: rgba(255, 255, 255, 0.8);
       position: absolute;
       -webkit-transform: rotateY(-90deg);
@@ -42,7 +43,7 @@
       -webkit-transform-style: preserve-3d;
       -webkit-perspective: 400;
       z-index: 10;
-      line-height: 30px;
+      line-height: 2.5em;
     }
     div.bento > ul li.reversed .meta { 
       -webkit-transform-origin: 100% 50%;
@@ -158,20 +159,20 @@
   
   <script>
     var patterns = {
-      '50_percent_chance_to_make_popular_pictures_span_for_2_columns': {
+      '15_percent_chance_to_make_popular_pictures_span_for_2_columns': {
         ratio: [0.6, 1],
         span: 2,
-        probability: 0.40
+        probability: 0.15
       },
-      '50_percent_to_make_very_popular_pictures_span_for_3_columns': {
+      '25_percent_to_make_very_popular_pictures_span_for_3_columns': {
         ratio: [0.8, 1],
         span: 3,
-        probability: 0.50
+        probability: 0.25
       },
-      '25_percent_to_mildly_popular_pictures_span_for_2_columns': {
+      '15_percent_to_mildly_popular_pictures_span_for_2_columns': {
         rating: [0.4, 0.6],
         span: 2,
-        probability: 0.25
+        probability: 0.15
       }
     }
     var element = document.getElementsByClassName('bento')[0];
@@ -197,8 +198,8 @@
           delete element.style.width;
           element.className = element.className.replace(' span', '');
         }
-        if (this.column.width > width + 5) {
-          this.relativeWidth = (width / (this.column.width - 5)) * 100 + '%';
+        if (this.column.width > width) {
+          this.relativeWidth = ((width + 5 ) / (this.column.width)) * 100 + '%';
         }
         if (this.hole) element.className = (element.className || '') + ' hole';
         else element.className = element.className.replace(' hole', '');
@@ -217,11 +218,11 @@
           case 'IMG':
             if (this.lastWidth >= width) break;
             var o = element.offsetHeight;
-            //element.style.height = height + 'px';
+            element.style.height = height + 'px';
             this.lastWidth = width;
             element.onload = element.onerror = function() {
               element.onload = element.onerror = null;
-              //element.style.height = 'auto';
+              element.style.height = 'auto';
             }
             element.src = value.replace('/x/', function() {
               return '/' + width + 'x' + '/'
