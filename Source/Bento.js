@@ -109,8 +109,11 @@ Bento.prototype.scrollTo = function(x, y) {
   this.setScrollTop(y)
 };
 Bento.prototype.setScrollTop = function(top) {
-  if (top +  window.innerHeight * 1.5 > this.height)
-    this.load(this.items.length)
+  if (top +  window.innerHeight * 1.5 > this.height) {
+    if (this.items.length === this.loaded) return;
+    this.loaded = this.items.length;
+    this.load(this.loaded)
+  }
   return this.scrollTop = top;
 };
 Bento.prototype.onResize = function(e) {

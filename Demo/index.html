@@ -263,7 +263,7 @@
           })
         }
       }  
-      xhr.open("GET", location.hostname.indexOf('refinery29') 
+      xhr.open("GET", location.hostname.indexOf('refinery29') > -1
           ? "/api/pipeline/posts?limit=40&offset=" + this.items.length + "&access_token=null&sort_by=score&sort_order=desc"
           : "posts.json");
       xhr.send();
