@@ -28,6 +28,9 @@
       width: 100%;
       position: relative;
     }
+    div.bento ul li.hole {
+      z-index: 6;
+    }
     div.bento ul li.focused {
       z-index: 11;
     }
@@ -92,9 +95,6 @@
     div.bento ul li .meta .close {
       float: right;
       cursor: pointer;
-    }
-    div.bento ul li.hole {
-      z-index: 6;
     }
     div.bento ul {
       display: table-cell;
@@ -323,11 +323,12 @@
           old.element.className = old.element.className.replace(' open', '');
         }, 300)
       }
-      if (focused == Pipeline.items[li.index]) {
+      var bento = li.parentNode.parentNode.parentNode == reversed ? Pipeline.Updates : Pipeline;
+      if (focused == bento.items[li.index]) {
         shifted = focused = null;
         return; 
       }  
-      focused = Pipeline.items[li.index];
+      focused = bento.items[li.index];
       li.className = (li.className || '') + ' open';
       setTimeout(function() {
         li.className = (li.className || '') + ' focused';
