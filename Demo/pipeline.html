@@ -13,33 +13,44 @@
       overflow-y: scroll;
       overflow-x: hidden;
     }
-    div.bento > ul li {
+    div.bento {
+      display: table;
+      width: 100%;
+    }
+    div.bento > div {
+      display: table-row;
+      height: 100%;
+    }
+    div.bento.reversed ul {
+      vertical-align: bottom;
+    }
+    div.bento ul li {
       width: 100%;
       position: relative;
     }
-    div.bento > ul li.focused {
+    div.bento ul li.focused {
       z-index: 11;
     }
-    div.bento > ul li img, div.bento > ul li.focused img.loaded{
+    div.bento ul li img, div.bento ul li.focused img.loaded{
       display: block;
       width: 100%;
     }
-    div.bento > ul li img.loaded, div.bento > ul li img.loading, div.bento > ul li.focused img.loaded + img{
+    div.bento ul li img.loaded, div.bento ul li img.loading, div.bento ul li.focused img.loaded + img{
       display: none;
     }
-    div.bento > ul li h2{
+    div.bento ul li h2{
       padding: 0;
       margin: 0;
       font: 1.5em Georgia;
     }
-    div.bento > ul li.span img{
+    div.bento ul li.span img{
       position: relative;
       z-index: 5;
     }
-    div.bento > ul li.open .meta {
+    div.bento ul li.open .meta {
       display: block;
     }
-    div.bento > ul li .meta { 
+    div.bento ul li .meta { 
       padding: 5px;
       display: none;
       font-size: 0.75em;
@@ -56,13 +67,13 @@
       z-index: 10;
       line-height: 2.5em;
     }
-    div.bento > ul li.reversed .meta { 
+    div.bento ul li.reversed .meta { 
       -webkit-transform-origin: 100% 50%;
       right: 100%;
       margin-right: -5px;
       left: auto;
     }
-    div.bento > ul li .meta .close {
+    div.bento ul li .meta .close {
       height: 42px;
       width: 42px;
       font: 0px/0px '0';
@@ -70,7 +81,7 @@
       margin-top: -6px;
       background-image: url(http://sdwebx.worldbank.org/climateportalb/images/water/close-button.png);
     }
-    div.bento > ul li.focused .meta {
+    div.bento ul li.focused .meta {
       -webkit-transform: rotateY(0deg);
       -moz-transform: rotateY(0deg);
       -ms-transform: rotateY(0deg);
@@ -78,64 +89,66 @@
       transform: rotateY(0deg);
       z-index: 20;
     }
-    div.bento > ul li .meta .close {
+    div.bento ul li .meta .close {
       float: right;
       cursor: pointer;
     }
-    div.bento > ul li.hole {
+    div.bento ul li.hole {
       z-index: 6;
     }
-    div.bento > ul {
-      float: left;
+    div.bento ul {
+      display: table-cell;
+      vertical-align: top;
+      height: 100%;
       margin: 0;
       padding: 0;
       list-style: none;
       min-height: 1px;
-      width: 16.666%;
+      width: 16.67%;
     }
-    div.bento > ul > li {
+    div.bento ul > li {
       margin: 0 auto;
     }
-    div.bento > ul > li.static {
+    div.bento ul > li.static {
       -webkit-transition: none;
       -moz-transition: none;
       -o-transition: none;
       -ms-transition: none;
       transition: none;
     }
-    div.bento > ul > li > section.picture {
+    div.bento ul > li > section.picture {
     padding: 5px 0 0 5px;
     }
     @media all and (max-width:800px) {
-      div.bento > ul {
+      div.bento ul {
         width: 20%;
       }
-      div.bento > ul.f {
+      div.bento ul.f {
         display: none;
       }
     }
     @media all and (max-width:600px) {
-      div.bento > ul {
+      div.bento ul {
         width: 25%;
       }
-      div.bento > ul.f {
+      div.bento ul.f {
         display: none;
       }
-      div.bento > ul.e {
+      div.bento ul.e {
         display: none;
       }
     }
     @media all and (max-width:480px) {
-      div.bento > ul {
+      div.bento ul {
         width: 33%;
       }
-      div.bento > ul.f {
+      div.bento ul.f {
         display: none;
       }
-      div.bento > ul.e {
+      div.bento ul.e {
         display: none;
       }
-      div.bento > ul.d {
+      div.bento ul.d {
         display: none;
       }
     }
@@ -145,16 +158,27 @@
   </style>
 </head>
 <body>
+  <div class="reversed bento">
+    <div>
+      <ul class="a"><li>321</li><li>33</li><li>222</li><li>123</li></ul>
+      <ul class="b"></ul>
+      <ul class="c"></ul>
+      <ul class="d"></ul>
+      <ul class="e"></ul>
+      <ul class="f"></ul>
+    </div>
+  </div>
   <header>
-    
   </header>
   <div class="bento">
-    <ul class="a"></ul>
-    <ul class="b"></ul>
-    <ul class="c"></ul>
-    <ul class="d"></ul>
-    <ul class="e"></ul>
-    <ul class="f"></ul>
+    <div>
+      <ul class="a"></ul>
+      <ul class="b"></ul>
+      <ul class="c"></ul>
+      <ul class="d"></ul>
+      <ul class="e"></ul>
+      <ul class="f"></ul>
+    </div>
     <footer></footer>
   </div>
   <script type="template" id="post">
@@ -192,8 +216,8 @@
         probability: 0.15
       }
     }
-    var element = document.getElementsByClassName('bento')[0];
-    var columns = element.getElementsByTagName('ul');
+    var reversed = document.getElementsByClassName('bento')[0];
+    var element = document.getElementsByClassName('bento')[1];
     var template = document.getElementById('post').textContent;
     function render (content, element, parent) {
       if (!element) {
@@ -258,18 +282,26 @@
         if (child.nodeType == 1) render.call(this, content, child, parent || true)
       return element;
     }
-    function prepare () {
+    function prepared(n) {
+      return function(a, b, c) {
+        return prepare.call(this, n, 0, a, b, c)
+      }
+    }
+    function prepare (limit, offset) {
       var posts = response.result.posts;
       var times = parseInt((location.search.match(/times=(\d+)/i) || [0,1])[1])
       var ary = [];
       for (var i = 0; i < times; i++) ary.push(i);
+      var bento = this;
+      if (offset == null) offset = 0;
       ary.forEach(function(j) {
         posts.forEach(function(post, i) {
+          if (i < offset || limit + offset < i) return;
           post.width = parseInt(post.leader_image.width)
           post.height = parseInt(post.leader_image.height)
           post.rating = parseFloat(post.social_score_percentile);
           setTimeout(function() {
-            Pipeline.push(post);
+            bento.push(post);
           }, ((j * posts.length) + i) * parseInt((location.search.match(/delay=(\d+)/i) || [0,0])[1]))
         })
       })
@@ -334,7 +366,26 @@
     Math.seed = (location.search.match(/seed=([^&?]+)/i) || [0, Math.random().toString()])[1]
     Math.seedrandom(Math.seed);
     
-    Pipeline = new Bento(5, element, columns, prepare, render, patterns, window);
+    Pipeline         = new Bento(5,              element,  element.getElementsByTagName('ul'), prepared(40), render, patterns);
+    Math.seedrandom(Math.seed);
+    Pipeline.Updates = new Bento(5, 'reversed', reversed, reversed.getElementsByTagName('ul'), prepared(3), render, patterns);
     
+    window.onscroll = function(e) {
+      Pipeline.onScroll(e);
+    }
+    window.onresize = function(e) {
+      Pipeline.onResize(e);
+      Pipeline.Updates.onResize(e);
+    }
+    setTimeout(function() {
+      window.scrollTo(0, reversed.offsetHeight);
+    }, 0);
+    setInterval(function() {
+      var offset = reversed.offsetHeight;
+      prepare.call(Pipeline.Updates, 3, Pipeline.Updates.items.length % 40);
+      setTimeout(function() {
+        window.scrollTo(0, window.scrollY + reversed.offsetHeight - offset);
+      }, 0);
+    }, 2000)
   </script>
 </body>

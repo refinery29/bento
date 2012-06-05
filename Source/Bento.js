@@ -24,12 +24,6 @@ var Bento = function() {
         } else {
           if (arg === window) {
             var self = this;
-            window.onresize = function(e) {
-              self.onResize(e)
-            }
-            window.onscroll = function(e) {
-              self.onScroll(e)
-            }
           } else if (arg.width) {
             this.setSize(arg.width, arg.height); 
           } else {
@@ -50,6 +44,9 @@ var Bento = function() {
         if (arg < 100 && arg >= 0) this.gutter = arg;
         else if (width == null) var width = this.setWidth(arg);
         else this.setHeight(arg);
+        break;
+      case 'string':
+        this[arg] = true;
     }
   }
   this.load(this.items.length);
@@ -582,12 +579,18 @@ Bento.Item.prototype.getDependent = function(column, top, result, lookup, inters
 };
 Bento.Item.prototype.setOffsetTop = function(offsetTop) {
   offsetTop = Math.round(offsetTop)
-  if (this.element) this.element.style.marginTop = offsetTop / this.column.width * 100 + '%';
+  if (this.element) {
+    var prop = this.bento.reversed ? 'marginBottom' : 'marginTop';
+    this.element.style[prop] = offsetTop / this.column.width * 100 + '%';
+  }
   return this.offsetTop = offsetTop;
 }
 Bento.Item.prototype.setPaddingTop = function(paddingTop) {
   paddingTop = Math.round(paddingTop)
-  if (this.element) this.element.style.paddingTop = paddingTop / this.column.width * 100 + '%';
+  if (this.element) {
+    var prop = this.bento.reversed ? 'paddingBottom' : 'paddingTop';
+    this.element.style[prop] = paddingTop / this.column.width * 100 + '%';
+  }
   return this.paddingTop = paddingTop;
 }
 Bento.Item.prototype.setMarginLeft = function(marginLeft) {
@@ -612,12 +615,16 @@ Bento.Item.prototype.setContent = function(content) {
       this.setMarginLeft(margin);
     }
   }
-  if (margin == null && this.marginLeft) this.setMarginLeft(0);
+  if (margin == null && this.marginLeft != null) this.setMarginLeft(0);
   if (this.column.element) this.inject();
 };
 Bento.Item.prototype.inject = function() {
   var prev = this.hole && this.previous && this.previous.element;
-  var after = prev ? prev.nextSibling : this.hole && this.column.element.firstChild
+  if (this.bento.reversed) {
+    var after = prev || this.column.element.firstChild 
+  } else {
+    var after = prev ? prev.nextSibling : this.hole && this.column.element.firstChild
+  }
   if (this.offsetTop) this.setOffsetTop(this.offsetTop);
   this.column.element.insertBefore(this.element, after)
 }
