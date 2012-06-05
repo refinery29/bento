@@ -300,9 +300,7 @@
           post.width = parseInt(post.leader_image.width)
           post.height = parseInt(post.leader_image.height)
           post.rating = parseFloat(post.social_score_percentile);
-          setTimeout(function() {
-            bento.push(post);
-          }, ((j * posts.length) + i) * parseInt((location.search.match(/delay=(\d+)/i) || [0,0])[1]))
+          bento.push(post);
         })
       })
     }
@@ -377,15 +375,11 @@
       Pipeline.onResize(e);
       Pipeline.Updates.onResize(e);
     }
-    setTimeout(function() {
       window.scrollTo(0, reversed.offsetHeight);
-    }, 0);
     setInterval(function() {
       var offset = reversed.offsetHeight;
       prepare.call(Pipeline.Updates, 3, Pipeline.Updates.items.length % 40);
-      setTimeout(function() {
-        window.scrollTo(0, window.scrollY + reversed.offsetHeight - offset);
-      }, 0);
+      window.scrollTo(0, window.scrollY + reversed.offsetHeight - offset);
     }, 2000)
   </script>
 </body>
