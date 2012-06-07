@@ -154,7 +154,7 @@ Bento.prototype.visibilityWeight = 1;
 Bento.prototype.holeFillWeight = 1;
 Bento.prototype.holeDistanceWeight = 1;
 Bento.prototype.holeMaximumRatio = 3.5;
-Bento.prototype.getPosition = function(item, prepend, span) {
+Bento.prototype.getPosition = function(item, span) {
   if (!this.columns) return;
   var width = item.width;
   var height = item.height
@@ -167,7 +167,6 @@ Bento.prototype.getPosition = function(item, prepend, span) {
   var holeFillWeight = this.holeFillWeight;
   var holeDistanceWeight = this.holeDistanceWeight;
   var size = 0;
-  if (span == null) span = 1;
   if (item.seed == null) item.seed = Math.random();
   
   // Check against all registered patterns and collect modifiers
@@ -179,7 +178,7 @@ Bento.prototype.getPosition = function(item, prepend, span) {
       if (pattern.rating == null || (pattern.rating[0] <= rating && rating <= pattern.rating[1])) {
         if (pattern.size != null) 
           size = pattern.size;
-        if (pattern.span != null)
+        if (pattern.span != null && span == null)
           span = pattern.span;
         if (pattern.ratingWeight != null)
           ratingWeight = pattern.ratingWeight;
@@ -194,7 +193,7 @@ Bento.prototype.getPosition = function(item, prepend, span) {
       }
     }
   }
-  
+  if (span == null) span = 1;
   // Calculate columns with min and max heights
   for (var i = 0, min, max, column; column = this.columns[i++];) {
     if (!min || min.height > column.height) min = column;
@@ -228,10 +227,6 @@ Bento.prototype.getPosition = function(item, prepend, span) {
       }
       if (reversed == null) continue;
     }
-    if (span > 1 && reversed == null) {
-      fullWidth = column.width;
-      span = 1;
-    }
     var ratio = item.width / item.height;
     
     // Find out hole that an item may fill
@@ -263,6 +258,7 @@ Bento.prototype.getPosition = function(item, prepend, span) {
     }  
     reversed = null;
   }
+  if (span > 1 && reversed == null) return this.getPosition(item, 1);
   
   // Fill a hole, if it's score higher than the best column score
   if (span == 1 && bestHoleScore >= score)
@@ -393,10 +389,10 @@ Bento.Item.prototype.setBento = function(bento) {
 Bento.Item.prototype.setScale = function(scale) {
   return this.scale = scale;
 };
-Bento.Item.prototype.setPosition = function(position, prepend) {
+Bento.Item.prototype.setPosition = function(position) {
   if (!position) {
     if (!this.bento) return;
-    position = this.bento.getPosition(this, prepend);
+    position = this.bento.getPosition(this);
   }
   if (!position) return;
   if (position.push && position.map) {
