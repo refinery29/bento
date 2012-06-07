@@ -254,11 +254,11 @@ Bento.prototype.getPosition = function(item, span) {
     if (intermediate < score) {
       intermediate = score;
       match = column;
-      direction = !reversed;
+      direction = reversed;
     }  
     reversed = null;
   }
-  if (span > 1 && reversed == null) return this.getPosition(item, 1);
+  if (span > 1 && direction == null) return this.getPosition(item, 1);
   
   // Fill a hole, if it's score higher than the best column score
   if (span == 1 && bestHoleScore >= score)
@@ -267,7 +267,7 @@ Bento.prototype.getPosition = function(item, span) {
   // Collect columns affected by spanning
   if (span > 1 && match) {
     var matches = [match];
-    if (direction) {
+    if (!direction) {
       for (var j = this.columns.indexOf(match) + 1, k = j + Math.ceil(span) - 1; j < k; j++)
         matches.push(this.columns[j])
     } else {
