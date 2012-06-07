@@ -194,7 +194,7 @@ describe("Bento", function() {
     describe('and there is no space on the right to span', function() {
       it ('should span to the left and then fill holes', function() {
         var items = [{width: 50, height: 100}, {width: 50, height: 150}, {width: 50, height: 200}, 
-                     {width: 100, height: 25}, {width: 50, height: 60}, {width: 200, height: 50}];
+                     {width: 200, height: 50}, {width: 50, height: 60}, {width: 200, height: 50}];
         var bento = new Bento([100, 100, 100], {
           'span_wide_images': {
             ratio: [1, 5],
@@ -698,7 +698,7 @@ describe("Bento", function() {
               rating: [0.01, 0.5],
               span: 2
             }
-          }, items);
+          }, items);  
           expect(bento.items[0].getDependent(1).map(indexer)).toEqual([4])
           expect(bento.items[0].getDependent(2).map(indexer)).toEqual([4, 1])
           expect(bento.items[0].getDependent(3).map(indexer)).toEqual([4, 1, 2, 5])

@@ -51,7 +51,7 @@ var Bento = function() {
   }
   this.load(this.items.length);
 };
-Bento.prototype.setColumns = function(settings) {
+Bento.prototype.setColumns = function(settings, reflow) {
   if (!settings && this.allColumns) {
     var columns = this.allColumns;
   } else {
@@ -62,7 +62,7 @@ Bento.prototype.setColumns = function(settings) {
     delete this.maxWidth
     delete this.minWidth;
   }   
-  var that = this, diff;
+  var that = this, diff = reflow;
   if (!this.allColumns) this.allColumns = columns;
   columns = columns.filter(function(column, i) {
     if (column.element) column.setWidth(column.element)
@@ -156,7 +156,7 @@ Bento.prototype.holeDistanceWeight = 1;
 Bento.prototype.holeMaximumRatio = 3.5;
 Bento.prototype.getPosition = function(item, prepend, span) {
   if (!this.columns) return;
-  var width = item.width
+  var width = item.width;
   var height = item.height
   var ratio = width / height;
   var rating = item.rating || 0;
@@ -213,7 +213,7 @@ Bento.prototype.getPosition = function(item, prepend, span) {
             break;
           else fullWidth += next.width;
         }
-        if (j == k) reversed = false;
+        if (j == k && fullWidth <= width) reversed = false;
       }
       // try spanning to the left
       if (reversed == null && i - span + 1 > -1) {
@@ -224,16 +224,16 @@ Bento.prototype.getPosition = function(item, prepend, span) {
             break;
           else fullWidth += previous.width;
         }
-        if (j == k) reversed = true;
+        if (j == k  && fullWidth <= width) reversed = true;
       }
       if (reversed == null) continue;
-    }  
+    }
+    if (width < fullWidth) fullWidth = column.width;
     var ratio = item.width / item.height;
     
     // Find out hole that an item may fill
-    if (column.holes) for (var l = 0, hole, bestHole; hole = column.holes[l++];) {
-      var width = hole[1] * ratio;
-      var holeFill = width / column.width;
+    if (column.holes) for (var l = 0, hole, bestHole, bestHoleWidth; hole = column.holes[l++];) {
+      var holeFill = (hole[1] * ratio) / column.width;
       if (holeFill > 1) holeFill = 1 / holeFill;
       var holeDistance = Math.max(1 - hole[0] / max.height, 0)
       var holeScore = (holeFill * holeFillWeight + holeDistance * holeDistanceWeight) / 2;
@@ -582,6 +582,7 @@ Bento.Item.prototype.setOffsetTop = function(offsetTop) {
   if (this.element) {
     var prop = this.bento.reversed ? 'marginBottom' : 'marginTop';
     this.element.style[prop] = offsetTop / this.column.width * 100 + '%';
+    var i = this.column.items.indexOf(this);
   }
   return this.offsetTop = offsetTop;
 }
@@ -605,7 +606,7 @@ Bento.Item.prototype.setContent = function(content) {
     if (content.width != null) {
       this.setSize(content.width, content.height);
     }
-  }
+  } else if (this.marginLeft) debugger
   this.setElement(this.render(content, this.element));
   this.content = content;
   if (!this.column) return;
