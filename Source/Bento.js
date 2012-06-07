@@ -228,7 +228,10 @@ Bento.prototype.getPosition = function(item, prepend, span) {
       }
       if (reversed == null) continue;
     }
-    if (width < fullWidth) fullWidth = column.width;
+    if (span > 1 && reversed == null) {
+      fullWidth = column.width;
+      span = 1;
+    }
     var ratio = item.width / item.height;
     
     // Find out hole that an item may fill
