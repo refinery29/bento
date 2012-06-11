@@ -734,7 +734,6 @@ describe("Bento", function() {
                 span: 2
               }
             }, items);
-            console.log(bento.items.map(function(i) { return i.bento.columns.indexOf(i.column)}))
             expect(bento.items[0].getDependent(1).map(indexer)).toEqual([3])
             expect(bento.items[0].getDependent(2).map(indexer)).toEqual([1])
             expect(bento.items[0].getDependent(3).map(indexer)).toEqual([1, 2])

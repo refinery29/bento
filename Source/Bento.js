@@ -114,9 +114,15 @@ Bento.prototype.setScrollTop = function(top) {
   return this.scrollTop = top;
 };
 Bento.prototype.onResize = function(e) {
-  this.setHeight(e.target.innerWidth)
+  this.setHeight(e.target.innerWidth);
   this.setWidth(e.target.innerHeight);
   if (this.columns) this.setColumns();
+  clearTimeout(this.resizing);
+  var self = this;
+  this.resizing = setTimeout(function() {
+    delete self.resizing;
+    self.setColumns(self.columns, true);
+  }, 500);
 };
 Bento.prototype.onScroll = function(e) {
   this.setScrollTop(window.scrollY);
