@@ -121,7 +121,7 @@ Bento.prototype.onResize = function(e) {
   var self = this;
   this.resizing = setTimeout(function() {
     delete self.resizing;
-    self.setColumns(self.columns, true);
+    self.setColumns(null, true);
   }, 500);
 };
 Bento.prototype.onScroll = function(e) {
