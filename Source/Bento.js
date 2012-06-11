@@ -117,6 +117,7 @@ Bento.prototype.onResize = function(e) {
   this.setHeight(e.target.innerWidth);
   this.setWidth(e.target.innerHeight);
   if (this.columns) this.setColumns();
+  if (!this.reflowing) return;
   clearTimeout(this.resizing);
   var self = this;
   this.resizing = setTimeout(function() {
