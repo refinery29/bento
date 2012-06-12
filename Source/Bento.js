@@ -65,7 +65,10 @@ Bento.prototype.setColumns = function(settings, reflow) {
   var that = this, diff = reflow;
   if (!this.allColumns) this.allColumns = columns;
   columns = columns.filter(function(column, i) {
-    if (column.element) column.setWidth(column.element)
+    if (column.element) {
+      column.previousWidth = column.width;
+      column.setWidth(column.element);
+    }
     if (that.columns) {
       if (column.width && that.columns[i] != column) 
         diff = true;
@@ -77,23 +80,24 @@ Bento.prototype.setColumns = function(settings, reflow) {
       diff = true;
       delete this.columns[i].width;
     }
-  if (!diff) return;
-  for (var i = 0, column; column = this.allColumns[i]; i++) {
-    for (var j = 0, item; item = column.items[j]; j++)
-      item.reset();
-    if (column.element) while (column.element.lastChild)
-      column.element.removeChild(column.element.lastChild)
+  if (diff) {
+    for (var i = 0, column; column = this.allColumns[i]; i++) {
+      for (var j = 0, item; item = column.items[j]; j++)
+        item.reset();
+      if (column.element) while (column.element.lastChild)
+        column.element.removeChild(column.element.lastChild)
+    }
+    for (var i = 0, column; column = columns[i]; i++) {
+      column.items.length = 0
+      column.height = 0;
+      if (column.holes) column.holes.length = 0;
+      if (this.maxWidth == null || column.width < this.minWidth) this.minWidth = column.width;
+      if (this.maxWidth == null || column.width > this.maxWidth) this.maxWidth = column.width;
+    }
+    this.columns = columns
+    this.reflow();
+    return this.columns;
   }
-  for (var i = 0, column; column = columns[i]; i++) {
-    column.items.length = 0
-    column.height = 0;
-    if (column.holes) column.holes.length = 0;
-    if (this.maxWidth == null || column.width < this.minWidth) this.minWidth = column.width;
-    if (this.maxWidth == null || column.width > this.maxWidth) this.maxWidth = column.width;
-  }
-  this.columns = columns
-  if (diff) this.update();
-  return this.columns;
 };
 Bento.prototype.load = function(length) {
   if (this.request) {
@@ -122,6 +126,7 @@ Bento.prototype.onResize = function(e) {
   var self = this;
   this.resizing = setTimeout(function() {
     delete self.resizing;
+    if (Math.seedrandom) Math.seedrandom(Math.seed)
     self.setColumns(null, true);
   }, 500);
 };
@@ -141,7 +146,7 @@ Bento.prototype.setWidth = function(width) {
   if (width.nodeType) width = width.offsetWidth || parseInt(width.style.width || 0)
   return this.width = Math.floor(width);
 };
-Bento.prototype.update = function() {
+Bento.prototype.reflow = function() {
   for (var i = 0, j = this.items.length; i < j; i++) {
     this.items[i].setPosition()
   }
@@ -393,9 +398,6 @@ Bento.Item.prototype.setBento = function(bento) {
   this.bento = bento;
   if (!this.column && this.width) this.setPosition()
 };
-Bento.Item.prototype.setScale = function(scale) {
-  return this.scale = scale;
-};
 Bento.Item.prototype.setPosition = function(position) {
   if (!position) {
     if (!this.bento) return;
@@ -436,17 +438,18 @@ Bento.Item.prototype.setPosition = function(position) {
     previous = position.items[position.items.length - 1];
   var subject = previous || position;
   if (subject.whitespace) {
-    if (!hole) 
+    if (!hole) {
       offsetTop = subject.whitespace;
-    else {
+    } else {
       if (previous) offsetTop = hole[0] - previous.top - previous.height * previous.scale - gutter;
-      this.whitespace = subject.whitespace - hole[1] - offsetTop
+      this.whitespace = subject.whitespace - hole[1] - offsetTop;
     }
     delete subject.whitespace;
   }
   // Add top offset to the item if applicable
   this.top = Math.round(offsetTop + (previous ? previous.top + previous.height * previous.scale + gutter : 0));
   this.previous = previous;
+  this.span = span;
   
   var bento = this.bento;
   if (bento) 
@@ -455,11 +458,10 @@ Bento.Item.prototype.setPosition = function(position) {
     width = position.width - gutter ;
     
   // Calculate width for spanning item
-  if (span && bento) {
-    this.span = span;
+  if (span) {
     for (var i = 0, j = span.length; i < j; i++)
       width += span[i].width
-  } else delete this.span;
+  }
   
   // Update item dimensions
   this.scale = width / this.width;
@@ -584,13 +586,13 @@ Bento.Item.prototype.getDependent = function(column, top, result, lookup, inters
     return result
 };
 Bento.Item.prototype.setOffsetTop = function(offsetTop) {
-  offsetTop = Math.round(offsetTop)
+  offsetTop = Math.round(offsetTop);
+  this.offsetTop = offsetTop;
   if (this.element) {
     var prop = this.bento.reversed ? 'marginBottom' : 'marginTop';
     this.element.style[prop] = offsetTop / this.column.width * 100 + '%';
-    var i = this.column.items.indexOf(this);
   }
-  return this.offsetTop = offsetTop;
+  return offsetTop;
 }
 Bento.Item.prototype.setPaddingTop = function(paddingTop) {
   paddingTop = Math.round(paddingTop)
@@ -608,7 +610,6 @@ Bento.Item.prototype.setMarginLeft = function(marginLeft) {
 Bento.Item.prototype.setContent = function(content) {
   if (content != this.content) {
     if (content.rating) this.rating = content.rating;
-    if (content.scale) this.setScale(content.scale)
     if (content.width != null) {
       this.setSize(content.width, content.height);
     }
@@ -632,7 +633,7 @@ Bento.Item.prototype.inject = function() {
   } else {
     var after = prev ? prev.nextSibling : this.hole && this.column.element.firstChild
   }
-  if (this.offsetTop) this.setOffsetTop(this.offsetTop);
+  if (this.offsetTop) this.setOffsetTop(this.offsetTop, this.offsetted);
   this.column.element.insertBefore(this.element, after)
 }
 Bento.Item.prototype.reset = function() {
@@ -642,9 +643,11 @@ Bento.Item.prototype.reset = function() {
   delete this.span;
   delete this.whitespace;
   delete this.offsetTop;
+  delete this.offsetted;
   delete this.marginLeft;
   delete this.paddingTop;
   delete this.column;
+  delete this.seed;
 }
 Bento.Item.prototype.render = function(content, element) {
   if (this.onRender) element = this.onRender(content, element)

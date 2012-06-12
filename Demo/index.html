@@ -183,7 +183,7 @@
         element = document.createElement('li');
         element.setAttribute('itemscope', 'itemscope');
         element.innerHTML = template;
-      } else {
+      } else if (!parent) {
         element.removeAttribute('style')
       }
       var width = Math.round(this.scale * this.width);
