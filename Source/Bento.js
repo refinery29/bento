@@ -118,8 +118,8 @@ Bento.prototype.setScrollTop = function(top) {
   return this.scrollTop = top;
 };
 Bento.prototype.onResize = function(e) {
-  this.setHeight(e.target.innerWidth);
-  this.setWidth(e.target.innerHeight);
+  this.setHeight(window.innerWidth);
+  this.setWidth(window.innerHeight);
   if (this.columns) this.setColumns();
   if (!this.reflowing) return;
   clearTimeout(this.resizing);
