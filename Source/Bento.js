@@ -131,7 +131,7 @@ Bento.prototype.onResize = function(e) {
   }, 500);
 };
 Bento.prototype.onScroll = function(e) {
-  this.setScrollTop(window.scrollY);
+  this.setScrollTop(document.documentElement.scrollTop || window.scrollY);
 };
 Bento.prototype.setSize = function(width, height, quiet) {
   this.setWidth(width);

@@ -380,7 +380,8 @@
     setInterval(function() {
       var offset = reversed.offsetHeight;
       prepare.call(Pipeline.Updates, 3, Pipeline.Updates.items.length % 40);
-      window.scrollTo(0, window.scrollY + reversed.offsetHeight - offset);
+      var scrollTop = document.documentElement.scrollTop || window.scrollY;
+      window.scrollTo(0, scrollTop + reversed.offsetHeight - offset);
     }, 2000)
   </script>
 </body>
