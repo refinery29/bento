@@ -10,6 +10,7 @@ var Bento = function() {
     return bento;
   }
   if (this.items == null) this.items = [];
+  if (this.used == null) this.used = [];
   for (var i = 0, j = arguments.length, arg; i < j; i++) {
     switch (typeof (arg = arguments[i])) {
       case 'object':
@@ -81,16 +82,9 @@ Bento.prototype.setColumns = function(settings, reflow) {
       delete this.columns[i].width;
     }
   if (diff) {
-    for (var i = 0, column; column = this.allColumns[i]; i++) {
-      for (var j = 0, item; item = column.items[j]; j++)
-        item.reset();
-      if (column.element) while (column.element.lastChild)
-        column.element.removeChild(column.element.lastChild)
-    }
+    for (var i = 0, column; column = this.allColumns[i]; i++) 
+      column.reset();
     for (var i = 0, column; column = columns[i]; i++) {
-      column.items.length = 0
-      column.height = 0;
-      if (column.holes) column.holes.length = 0;
       if (this.maxWidth == null || column.width < this.minWidth) this.minWidth = column.width;
       if (this.maxWidth == null || column.width > this.maxWidth) this.maxWidth = column.width;
     }
@@ -294,11 +288,17 @@ Bento.prototype.getPosition = function(item, span) {
 var delay = 0;
 Bento.prototype.push = function() {
   for (var i = 0, j = arguments.length, items = this.items, position; i < j; i++)
-    items.push(Bento.Item(this, this.renderer, arguments[i]))
+    items.push(Bento.Item(this, this.used.pop(), this.renderer, arguments[i]))
 };
 Bento.prototype.concat = function(enumerable) {
   for (var i = 0, j = enumerable.length; i < j; i++)
     this.push(enumerable[i]);
+};
+Bento.prototype.reset = function(enumerable) {
+  for (var i = 0, col; col = this.columns[i++];)
+    col.reset();
+  this.used.push.apply(this.used, this.items);
+  this.items.length = 0;
 };
 /*
   Bento column holds multiple items. When new item is added to bento,
@@ -349,6 +349,15 @@ Bento.Column.prototype.getItemAt = function(top) {
     if (item.top <= top && top <= item.top + (item.height * item.scale))
       return item;
 };
+Bento.Column.prototype.reset = function() {
+  for (var j = 0, item; item = this.items[j]; j++)
+    item.reset();
+  if (this.element) while (this.element.lastChild)
+    this.element.removeChild(this.element.lastChild)
+  this.items.length = 0
+  this.height = 0;
+  if (this.holes) this.holes.length = 0;
+}
 /*
   Bento item is a wrapper over a content object. It knows its
   size and thus it helps bento to choose the right column.
@@ -649,6 +658,7 @@ Bento.Item.prototype.reset = function() {
   delete this.paddingTop;
   delete this.column;
   delete this.seed;
+  delete this.scale;
 }
 Bento.Item.prototype.render = function(content, element) {
   if (this.onRender) element = this.onRender(content, element)
