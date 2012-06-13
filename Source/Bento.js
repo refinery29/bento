@@ -634,7 +634,7 @@ Bento.Item.prototype.inject = function() {
     var after = prev ? prev.nextSibling : this.hole && this.column.element.firstChild
   }
   if (this.offsetTop) this.setOffsetTop(this.offsetTop, this.offsetted);
-  this.column.element.insertBefore(this.element, after)
+  this.column.element.insertBefore(this.element, after || null)
 }
 Bento.Item.prototype.reset = function() {
   delete this.previous;
