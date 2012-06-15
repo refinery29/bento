@@ -95,7 +95,7 @@ Bento.prototype.setColumns = function(settings, reflow) {
 };
 Bento.prototype.load = function(length) {
   if (this.request) {
-    var result = this.request(length, this.requested);
+    var result = this.request();
     if (result != null && result.push) this.push.apply(this, result);
     else this.requested = result;
   }
