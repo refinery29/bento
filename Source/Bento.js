@@ -82,8 +82,8 @@ Bento.prototype.setColumns = function(settings, reflow) {
       delete this.columns[i].width;
     }
   if (diff) {
-    for (var i = 0, column; column = this.allColumns[i]; i++) 
-      column.reset();
+    for (var i = 0, column; column = this.allColumns[i]; i++)
+      if (column.height) column.reset();
     for (var i = 0, column; column = columns[i]; i++) {
       if (this.maxWidth == null || column.width < this.minWidth) this.minWidth = column.width;
       if (this.maxWidth == null || column.width > this.maxWidth) this.maxWidth = column.width;
@@ -175,7 +175,6 @@ Bento.prototype.getPosition = function(item, span) {
   var holeDistanceWeight = this.holeDistanceWeight;
   var size = 0;
   if (item.seed == null) item.seed = Math.random();
-  
   // Check against all registered patterns and collect modifiers
   if (this.patterns) for (var property in this.patterns) {
     var pattern = this.patterns[property];
@@ -240,14 +239,16 @@ Bento.prototype.getPosition = function(item, span) {
     if (column.holes) for (var l = 0, hole, bestHole, bestHoleWidth; hole = column.holes[l++];) {
       var holeFill = (hole[1] * ratio) / column.width;
       if (holeFill > 1) holeFill = 1 / holeFill;
-      var holeDistance = Math.max(1 - hole[0] / max.height, 0)
+      if (holeFill <= 0.5) holeFill = 1;
+      var holeDistance = Math.max(1 - hole[0] / (max.height || 1), 0)
       var holeScore = (holeFill * holeFillWeight + holeDistance * holeDistanceWeight) / 2;
       if (holeScore > bestHoleScore) {
         bestHoleScore = holeScore;
         bestHole = hole;
       }
     }
-      
+    
+    if (!column.maxHeight) {
     // Find out a column where an item fits best
     var above      = max.height - column.height;
     var below      = max.height - min.height;
@@ -265,10 +266,11 @@ Bento.prototype.getPosition = function(item, span) {
     }  
     reversed = null;
   }
+  }
   if (span > 1 && direction == null) return this.getPosition(item, 1);
   
   // Fill a hole, if it's score higher than the best column score
-  if (span == 1 && bestHoleScore >= score)
+  if (span == 1 && (bestHoleScore >= score || score == null))
     return bestHole;
 
   // Collect columns affected by spanning
@@ -318,6 +320,13 @@ Bento.Column = function(first) {
           this.setBento(arg);
         else if (arg.nodeType)
           this.setElement(arg);
+        else if (arg.push)
+          if (arg[0]) var width = this.setWidth(arg[0]);
+          if (arg[1]) {
+            this.maxHeight = arg[1];
+            this.holes = [[0, arg[1], this]]
+          }
+          if (arg[2]) this.whitespace = arg[2];
         break;
       case 'number':
         if (width == null) var width = this.setWidth(arg);

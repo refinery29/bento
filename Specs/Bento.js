@@ -14,15 +14,15 @@ describe("Bento", function() {
   })
   describe('when given a function', function() {
     it ('should call that function to fetch data', function() {
-      var args, bento = new Bento(function(page, memo) {
-        args = [page, memo]
-        return page + 'Jizzlebeck'
+      var times = 0;
+      var bento = new Bento(function(page, memo) {
+        times++;
       });
-      expect(args).toEqual([0, undefined])
+      expect(times).toEqual(1)
       bento.load(1);        
-      expect(args).toEqual([1, '0Jizzlebeck'])
+      expect(times).toEqual(2)
       bento.load(2);        
-      expect(args).toEqual([2, '1Jizzlebeck'])
+      expect(times).toEqual(3)
     })
   })
   describe('when given an array of columns', function() {
@@ -217,6 +217,26 @@ describe("Bento", function() {
         })).toEqual([true, true, true])
       })
     })
+    
+    describe('and column height is limited', function() {
+      it ('should not let column overflow', function() {
+        var items = [{width: 100, height: 100}, {width: 100, height: 100}, {width: 100, height: 100}
+                     ,{width: 100, height: 200}, {width: 100, height: 100}, {width: 100, height: 100}
+                     , {width: 100, height: 100}, {width: 100, height: 100}
+                     ];
+        var bento = new Bento([[100, 250], [100, 300], [100, 200]], {
+          
+        }, items)
+        expect(bento.items[0].column).toBe(bento.columns[0])
+        expect(bento.items[1].column).toBe(bento.columns[1])
+        expect(bento.items[2].column).toBe(bento.columns[2])
+        expect(bento.items[3].column).toBe(bento.columns[1])
+        expect(bento.items[4].column).toBe(bento.columns[2])
+        expect(bento.items[5].column).toBe(bento.columns[0])
+        expect(bento.items[6].column).toBe(bento.columns[0])
+        expect(bento.items[7].column).toBeUndefined()
+      })
+    });
   });
   describe('.setColumns', function() {
     it ('should set & update columns', function() {
